@@ -457,6 +457,7 @@ ReadDown:
   LDA controller1
   AND #%00000100
   BEQ ReadDownDone
+  LDA $0206 ; load sprite Y position
   CLC
   LDA playery
   ADC #$02
@@ -468,6 +469,7 @@ ReadUp:
   LDA controller1
   AND #%00001000
   BEQ ReadUpDone
+  LDA $0206 ; load sprite Y position
   CLC
   LDA playery
   ADC #$FE
