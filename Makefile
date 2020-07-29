@@ -1,9 +1,11 @@
 all:
 	nesasm game.asm
+	[ -d bin ] || mkdir bin
+	mv *.nes bin
+	mv *.fns bin
 
 run:
-	fceux game.nes
+	fceux bin/game.nes
 
 clean:
-	rm -f *.nes
-	rm -f *.fns
+	rm -rf bin/
