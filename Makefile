@@ -1,8 +1,8 @@
 all:
-	nesasm game.asm
-	[ -d bin ] || mkdir bin
-	mv *.nes bin
-	mv *.fns bin
+	cd src && nesasm game.asm
+	[ -d "bin" ] || mkdir bin
+	mv src/*.nes bin
+	mv src/*.fns bin
 
 run:
 	fceux bin/game.nes
