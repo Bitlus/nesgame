@@ -237,7 +237,7 @@ InitialzeState:
   LDA #$80   ; player x offset
   STA playerx
 
-  LDA #$00   ; player y offset
+  LDA #$80   ; player y offset
   STA playery
   LDA #$C8   ; player y offset
   STA ground  
@@ -249,7 +249,7 @@ InitialzeState:
   STA loopCount
 
   LDA #$03
-  STA gravity
+  ;STA gravity
 
 
 
@@ -354,7 +354,9 @@ Update:
     JSR PollController
     JSR ReadLeft
     JSR ReadRight
-    JSR ReadA
+    JSR ReadDown
+    JSR ReadUp
+    ;JSR ReadA
     INC loopCount
     JSR UpdatePlayerPosition
     RTS
@@ -364,7 +366,8 @@ UpdatePlayerPosition:
   CLC
   LDA loopCount
   CMP #$0A
-  BNE SkipGravity
+  ;BNE SkipGravity
+  JMP SkipGravity
   LDA gravity
   ADC playervy
   STA playervy
@@ -448,6 +451,28 @@ ReadLeft:
   ADC #$FE 
   STA playerx
 ReadLeftDone:        ; handling this button is done
+  RTS
+
+ReadDown:
+  LDA controller1
+  AND #%00000100
+  BEQ ReadDownDone
+  CLC
+  LDA playery
+  ADC #$02
+  STA playery
+ReadDownDone:
+  RTS
+
+ReadUp:
+  LDA controller1
+  AND #%00001000
+  BEQ ReadUpDone
+  CLC
+  LDA playery
+  ADC #$FE
+  STA playery
+ReadUpDone:
   RTS
 
 ReadA: 
