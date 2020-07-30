@@ -118,7 +118,7 @@ LoadPalettesLoop:
 LoadSprites:
   LDX #$00              ; start at 0
 LoadSpritesLoop:
-  LDA playerspriteU, x        ; load data from address (sprites +  x)
+  LDA playerspriteR, x        ; load data from address (sprites +  x)
   STA $0200, x          ; store into RAM address ($0200 + x)
   INX                   ; X = X + 1
   CPX #$1C              ; Compare X to hex $20, decimal 32
@@ -302,14 +302,14 @@ DrawPlayerLoop:
   
   LDA $0203, x          ; load current x sprite position
   CLC  
-  LDA playerspriteUoffset, y    ; add player x with sprite offset
+  LDA playerspriteRoffset, y    ; add player x with sprite offset
   ADC playerx 
   INY                   ; increment sprite offset coutner
   STA $0203, x          ; store into RAM address ($0203 + x)
 
   LDA $0200, x          ; load current y sprite position
   CLC
-  LDA playerspriteUoffset, y   ; add player y with sprite offset
+  LDA playerspriteRoffset, y   ; add player y with sprite offset
   ADC playery
   INY
   STA $0200, x          ; store into RAM address ($0200 + x)
@@ -336,7 +336,7 @@ DrawEnemyLoop:
 
   LDA $0200, x          ; load current y sprite position
   CLC
-  LDA playerspriteUoffset, y   ; add player y with sprite offset
+  LDA playerspriteRoffset, y   ; add player y with sprite offset
   ADC enemyy
   INY
   STA $0200, x          ; store into RAM address ($0200 + x)
@@ -538,7 +538,7 @@ playerspriteLoffset:
   .db $00, $F8; (0,  -8)
   .db $00, $00; (0,  0)  
 
-playerspriteU:
+playerspriteR:
 ; 1st byte encodes the y position
 ; 2nd byte encodes the tile index loaded into the PPU 
 ; 3rd byte encodes any sprite attributes
@@ -552,12 +552,12 @@ playerspriteU:
 ; 4th byte encodes the x position
 
      ;vert tile attr horiz
-  .db $80, $02, $00, $98   ;sprite 2
-  .db $80, $00, $00, $A0   ;sprite 0
-  .db $88, $01, $00, $98   ;sprite 1
-  .db $88, $12, $00, $A0   ;sprite 5
+  .db $80, $06, $00, $90   ;sprite 2
+  .db $80, $07, $00, $98   ;sprite 0
+  .db $88, $16, $00, $90   ;sprite 1
+  .db $88, $17, $00, $98   ;sprite 5
 
-playerspriteUoffset:
+playerspriteRoffset:
       ;x   y
   .db $08, $F0; (8 , -16)
   .db $10, $F0; (16, -16)
