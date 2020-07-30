@@ -118,7 +118,7 @@ LoadPalettesLoop:
 LoadSprites:
   LDX #$00              ; start at 0
 LoadSpritesLoop:
-  LDA playersprite, x        ; load data from address (sprites +  x)
+  LDA playerspriteU, x        ; load data from address (sprites +  x)
   STA $0200, x          ; store into RAM address ($0200 + x)
   INX                   ; X = X + 1
   CPX #$1C              ; Compare X to hex $20, decimal 32
@@ -302,14 +302,14 @@ DrawPlayerLoop:
   
   LDA $0203, x          ; load current x sprite position
   CLC  
-  LDA playerspriteoffset, y    ; add player x with sprite offset
+  LDA playerspriteUoffset, y    ; add player x with sprite offset
   ADC playerx 
   INY                   ; increment sprite offset coutner
   STA $0203, x          ; store into RAM address ($0203 + x)
 
   LDA $0200, x          ; load current y sprite position
   CLC
-  LDA playerspriteoffset, y   ; add player y with sprite offset
+  LDA playerspriteUoffset, y   ; add player y with sprite offset
   ADC playery
   INY
   STA $0200, x          ; store into RAM address ($0200 + x)
@@ -317,7 +317,7 @@ DrawPlayerLoop:
   INX
   INX
   INX 
-  CPX #$1C              ; Compare X to hex $1C, decimal 28 meaning all 7 Player sprites done
+  CPX #$10              ; Compare X to hex $10, decimal 16 meaning all 4 Player sprites done
   BNE DrawPlayerLoop   ; Branch to LoadSpritesLoop if compare was Not Equal to zero
                         ; if compare was equal to 32, keep going down
   RTS
@@ -336,7 +336,7 @@ DrawEnemyLoop:
 
   LDA $0200, x          ; load current y sprite position
   CLC
-  LDA playerspriteoffset, y   ; add player y with sprite offset
+  LDA playerspriteUoffset, y   ; add player y with sprite offset
   ADC enemyy
   INY
   STA $0200, x          ; store into RAM address ($0200 + x)
@@ -511,7 +511,7 @@ palette:
   ;;  Character Palletes (0-3)
   .db $21,$2C,$11,$15, $0F,$35,$36,$37, $0F,$39,$3A,$3B, $0F,$3D,$3E,$0F
 
-playersprite:
+playerspriteL:
 ; 1st byte encodes the y position
 ; 2nd byte encodes the tile index loaded into the PPU 
 ; 3rd byte encodes any sprite attributes
@@ -527,21 +527,44 @@ playersprite:
      ;vert tile attr horiz
   .db $80, $00, $00, $80   ;sprite 0
   .db $80, $01, $00, $88   ;sprite 1
-  ;.db $80, $02, $00, $90   ;sprite 2
   .db $88, $10, $00, $80   ;sprite 3
   .db $88, $11, $00, $88   ;sprite 4
-  ;.db $88, $12, $00, $90   ;sprite 5
-  .db $90, $21, $00, $88   ;sprite 6
 
-playerspriteoffset:
+playerspriteLoffset:
       ;x   y
   .db $F8, $F0; (-8, -16)
   .db $00, $F0; (0,  -16)
-  ;.db $08, $F0; (8 , -16)
   .db $F8, $F8; (-8, -8) 
   .db $00, $F8; (0,  -8)
-  ;.db $08, $F8; (8,  -8)
   .db $00, $00; (0,  0)  
+
+playerspriteU:
+; 1st byte encodes the y position
+; 2nd byte encodes the tile index loaded into the PPU 
+; 3rd byte encodes any sprite attributes
+;  76543210
+;  |||   ||
+;  |||   ++- Color Palette of sprite.  Choose which set of 4 from the 16 colors to use
+;  |||
+;  ||+------ Priority (0: in front of background; 1: behind background)
+;  |+------- Flip sprite horizontally
+;  +-------- Flip sprite vertically
+; 4th byte encodes the x position
+
+     ;vert tile attr horiz
+  .db $80, $02, $00, $98   ;sprite 2
+  .db $80, $00, $00, $A0   ;sprite 0
+  .db $88, $01, $00, $98   ;sprite 1
+  .db $88, $12, $00, $A0   ;sprite 5
+
+playerspriteUoffset:
+      ;x   y
+  .db $08, $F0; (8 , -16)
+  .db $10, $F0; (16, -16)
+  .db $08, $F8; (8,  -8)
+  .db $10, $F8; (16,  -8)
+  .db $00, $00; (0,  0)  
+
 
 enemyspriteframe1:
   .db $F0, $04, $00, $00
