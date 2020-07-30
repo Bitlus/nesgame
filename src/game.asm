@@ -527,22 +527,21 @@ playersprite:
      ;vert tile attr horiz
   .db $80, $00, $00, $80   ;sprite 0
   .db $80, $01, $00, $88   ;sprite 1
-  .db $80, $02, $00, $90   ;sprite 2
+  ;.db $80, $02, $00, $90   ;sprite 2
   .db $88, $10, $00, $80   ;sprite 3
   .db $88, $11, $00, $88   ;sprite 4
-  .db $88, $12, $00, $90   ;sprite 5
+  ;.db $88, $12, $00, $90   ;sprite 5
   .db $90, $21, $00, $88   ;sprite 6
 
 playerspriteoffset:
       ;x   y
   .db $F8, $F0; (-8, -16)
   .db $00, $F0; (0,  -16)
-  .db $08, $F0; (8 , -16)
+  ;.db $08, $F0; (8 , -16)
   .db $F8, $F8; (-8, -8) 
   .db $00, $F8; (0,  -8)
-  .db $08, $F8; (8,  -8)
+  ;.db $08, $F8; (8,  -8)
   .db $00, $00; (0,  0)  
-
 
 enemyspriteframe1:
   .db $F0, $04, $00, $00
@@ -728,4 +727,4 @@ nescallback:
   
   .bank 2
   .org $0000
-  .incbin "art.chr"   ;includes 8KB graphics file
+  .incbin "new.chr"   ;includes 8KB graphics file
