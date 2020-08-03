@@ -6,6 +6,8 @@
 
 ;;;;;;;;;;;;;;;
 
+  .rsset $0000
+isWalking .rs 1
     
   .bank 0
   .org $C000 
@@ -95,6 +97,10 @@ NMI:
   STA $4014       ; set the high byte (02) of the RAM address, start the transfer
 
 
+  ; Set is walking flag
+  LDA #$00
+  STA isWalking
+
 LatchController:
   LDA #$01
   STA $4016
@@ -133,6 +139,10 @@ ReadUp:
   AND #%00000001   ; only look at bit 0
   BEQ ReadUpDone   ; branch to ReadBDone if button is NOT pressed (0)
 
+  ; Set isWalking flag
+  LDA #$01
+  STA isWalking
+
   ; Change player sprite direction
   LDA #%00000000 ; Set to not flip horizontal
   STA $0202
@@ -164,7 +174,6 @@ MoveUpLoop:
   TAX
   CPX #$10 ; compare X to 16
   BNE MoveUpLoop
-    
 
 ReadUpDone:
 
@@ -173,22 +182,26 @@ ReadDown:
   AND #%00000001     ; only look at bit 0
   BEQ ReadDownDone   ; branch to ReadBDone if button is NOT pressed (0)
 
+  ; Set isWalking flag
+  LDA #$01
+  STA isWalking
+
   ; Change player sprite direction
   LDA #%00000000 ; Set to not flip horizontal
   STA $0202
   STA $020A
+  STA $020E
   LDA #%01000000 ; Set to flip horizontal
   STA $0206
-  STA $020E
 
   ; Set correct sprite tiles
-  LDA #$00
+  LDA #$01
   STA $0201
-  LDA #$00
+  LDA #$01
   STA $0205
-  LDA #$10
+  LDA #$11
   STA $0209
-  LDA #$10
+  LDA #$12
   STA $020D
 
   LDX #$00
@@ -211,6 +224,9 @@ ReadLeft:
   AND #%00000001     ; only look at bit 0
   BEQ ReadLeftDone   ; branch to ReadBDone if button is NOT pressed (0)
 
+  ; Set isWalking flag
+  LDA #$01
+  STA isWalking
 
   ; Change player sprite direction
   LDA #%01000000 ; Set flip horizontal
@@ -250,6 +266,10 @@ ReadRight:
   AND #%00000001      ; only look at bit 0
   BEQ ReadRightDone   ; branch to ReadBDone if button is NOT pressed (0)
 
+  ; Set isWalking flag
+  LDA #$01
+  STA isWalking
+  
   ; Change player sprite direction
   LDA #%00000000 ; Set to not flip horizontal
   STA $0202
@@ -282,8 +302,30 @@ MoveRightLoop:
 
 ReadRightDone:
 
+IdleSprite:
+  LDA isWalking
+  CMP #$00
+  BNE IdleSpriteDone
 
+  ; Change player sprite direction
+  LDA #%00000000 ; Set to not flip horizontal
+  STA $0202
+  STA $020A
+  LDA #%01000000 ; Set to flip horizontal
+  STA $0206
+  STA $020E
 
+  ; Set correct sprite tiles
+  LDA #$00
+  STA $0201
+  LDA #$00
+  STA $0205
+  LDA #$10
+  STA $0209
+  LDA #$10
+  STA $020D
+
+IdleSpriteDone:
   
   RTI             ; return from interrupt
  
