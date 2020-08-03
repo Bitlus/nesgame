@@ -142,13 +142,13 @@ ReadUp:
   STA $020E
 
   ; Set correct sprite tiles
-  LDA #$00
+  LDA #$03
   STA $0201
-  LDA #$00
+  LDA #$03
   STA $0205
-  LDA #$10
+  LDA #$13
   STA $0209
-  LDA #$10
+  LDA #$13
   STA $020D
 
   ; Update player sprites Y positions
