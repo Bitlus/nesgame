@@ -65,7 +65,33 @@ LoadPalettesLoop:
   BNE LoadPalettesLoop  ; Branch to LoadPalettesLoop if compare was Not Equal to zero
                         ; if compare was equal to 32, keep going down
 
+;LoadBackground:
+;LDA $2002               ; read PPU status to reset the high/low latch
+;LDA #$20
+;STA $2006               ; write the high byte of $2000 address
+;LDA #$00
+;STA $2006               ; write the low byte of $2000 address
+;LDX #$00                 ; starting loop counter at 0
+;LoadBackgroundLoop:
+;LDA background, x       ; load data from address background + value in x
+;STA $2007               ; write data to PPU
+;INX                     ; increment x
+;CPX #$80                ; while x != $80, load the next background value
+;BNE LoadBackgroundLoop
 
+;LoadAttribute:
+;LDA $2002               ; read PPU status to reset the high/low latch
+;LDA #$23
+;STA $2006               ; write write the high byte of $2300 addy
+;LDA #$00
+;STA $2006               ; write the lowe byte of $2300 addy
+;LDX #$00                ; starting loop counter at 0
+;LoadAttributeLoop:
+;LDA attribute, x        ; load data from addy + x
+;STA $2007               ; write data to PPU
+;INX                     ; increment loop counter
+;CPX #$08                ; while x != $08, load next value
+;BNE LoadAttributeLoop
 
 LoadSprites:
   LDX #$00              ; start at 0
@@ -76,7 +102,6 @@ LoadSpritesLoop:
   CPX #$20              ; Compare X to hex $20, decimal 32
   BNE LoadSpritesLoop   ; Branch to LoadSpritesLoop if compare was Not Equal to zero
                         ; if compare was equal to 32, keep going down
-              
               
 
   LDA #%10000000   ; enable NMI, sprites from Pattern Table 1
@@ -338,6 +363,12 @@ IdleSpriteDone:
 palette:
   .db $0F,$31,$32,$33,$34,$35,$36,$37,$38,$39,$3A,$3B,$3C,$3D,$3E,$0F
   .db $0F,$17,$2D,$20,$31,$02,$38,$3C,$0F,$1C,$15,$14,$31,$02,$38,$3C
+
+;background:
+;  .db 
+
+;attribute:
+;  .db
 
 sprites:
      ;vert tile attr horiz
