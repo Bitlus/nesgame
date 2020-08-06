@@ -152,13 +152,13 @@ ReadUp:
   STA $020E
 
   ; Set correct sprite tiles
-  LDA #$03
+  LDA #$23
   STA $0201
-  LDA #$03
+  LDA #$23
   STA $0205
-  LDA #$13
+  LDA #$33
   STA $0209
-  LDA #$13
+  LDA #$33
   STA $020D
 
   ; Update player sprites Y positions
@@ -190,18 +190,18 @@ ReadDown:
   LDA #%00000000 ; Set to not flip horizontal
   STA $0202
   STA $020A
-  STA $020E
   LDA #%01000000 ; Set to flip horizontal
   STA $0206
+  STA $020E
 
   ; Set correct sprite tiles
-  LDA #$01
+  LDA #$22
   STA $0201
-  LDA #$01
+  LDA #$22
   STA $0205
-  LDA #$11
+  LDA #$32
   STA $0209
-  LDA #$12
+  LDA #$32
   STA $020D
 
   LDX #$00
@@ -236,13 +236,13 @@ ReadLeft:
   STA $020E
 
   ; Set correct sprite tiles
-  LDA #$21
+  LDA #$01
   STA $0201
-  LDA #$20
+  LDA #$00
   STA $0205
-  LDA #$31
+  LDA #$11
   STA $0209
-  LDA #$30
+  LDA #$10
   STA $020D
   
 
@@ -278,13 +278,13 @@ ReadRight:
   STA $020E
 
   ; Set correct sprite tiles
-  LDA #$20
+  LDA #$00
   STA $0201
-  LDA #$21
+  LDA #$01
   STA $0205
-  LDA #$30
+  LDA #$10
   STA $0209
-  LDA #$31
+  LDA #$11
   STA $020D
 
   LDX #$00
@@ -305,7 +305,7 @@ ReadRightDone:
 IdleSprite:
   LDA isWalking
   CMP #$00
-  BNE IdleSpriteDone
+  JMP IdleSpriteDone
 
   ; Change player sprite direction
   LDA #%00000000 ; Set to not flip horizontal
@@ -316,13 +316,11 @@ IdleSprite:
   STA $020E
 
   ; Set correct sprite tiles
-  LDA #$00
+  LDA #$22
   STA $0201
-  LDA #$00
   STA $0205
-  LDA #$10
+  LDA #$32
   STA $0209
-  LDA #$10
   STA $020D
 
 IdleSpriteDone:
@@ -341,10 +339,10 @@ palette:
 
 sprites:
      ;vert tile attr horiz
-  .db $80, $00, $00, $80   ;sprite 0
-  .db $80, $00, $40, $88   ;sprite 1
-  .db $88, $10, $00, $80   ;sprite 2
-  .db $88, $10, $40, $88   ;sprite 3
+  .db $80, $02, $00, $80   ;sprite 0
+  .db $80, $03, $00, $88   ;sprite 1
+  .db $88, $12, $00, $80   ;sprite 2
+  .db $88, $13, $00, $88   ;sprite 3
 
   .org $FFFA     ;first of the three vectors starts here
   .dw NMI        ;when an NMI happens (once per frame if enabled) the 
@@ -359,4 +357,4 @@ sprites:
   
   .bank 2
   .org $0000
-  .incbin "cowboy.chr"   ;includes 8KB graphics file from SMB1
+  .incbin "cowboy.chr"   ;includes 8KB graphics file
