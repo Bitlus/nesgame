@@ -10,8 +10,6 @@
 isWalking .rs 1
 bg_ptr_lo .rs 1 ; bg pointer low byte
 bg_ptr_hi .rs 1 ; bg pointer high byte
-at_ptr_lo .rs 1 ; attribute pointer low byte
-at_ptr_hi .rs 1 ; attribute pointer high byte
     
   .bank 0
   .org $C000 
@@ -74,9 +72,8 @@ LoadSpritesLoop:
   CPX #$20              ; Compare X to hex $20, decimal 32
   BNE LoadSpritesLoop   ; Branch to LoadSpritesLoop if compare was Not Equal to zero
                         ; if compare was equal to 32, keep going down
-              
+
 LoadBackground:
-  CLC
   LDA $2002       ; reset high/low latch
   LDA #$20
   STA $2006       ; write high byte
@@ -100,45 +97,21 @@ LoadBackgroundLoop:
   DEX 
   BNE LoadBackgroundLoop
       
-; LoadAttribute:
-  ; LDA $2002       ; reset high/low latch
-  ; LDA #$23
-  ; STA $2006       ; write high byte
-  ; LDA #$C0
-  ; STA $2006       ; write low byte
-
-  ; ; set up pointer to bg
-  ; LDA #LOW(attribute) ; #$00
-  ; STA at_ptr_lo  ; put low byte of bg into pointer
-  ; LDA #HIGH(attribute)
-  ; STA at_ptr_hi   ; put high byte into pointer
-
-  ; LDX #$04
-  ; LDY #$00
-; LoadAttributeLoop:
-  ; LDA [at_ptr_lo], y ; one byte from address + y
-  ; STA $2007
-  ; INY                 ; increment inner loop counter
-  ; BNE LoadAttributeLoop 
-  ; INC at_ptr_hi
-  ; DEX 
-  ; BNE LoadAttributeLoop
-	  
 LoadAttribute:
  CLC
- LDA $2002             ; read PPU status to reset the high/low latch
+ LDA $2002              ; read PPU status to reset the high/low latch
  LDA #$23
- STA $2006             ; write the high byte of $23C0 address
+ STA $2006              ; write the high byte of $23C0 address
  LDA #$C0
- STA $2006             ; write the low byte of $23C0 address
- LDX #$00              ; start out at 0
+ STA $2006              ; write the low byte of $23C0 address
+ LDX #$00               ; start out at 0
 LoadAttributeLoop:
- LDA attribute, x      ; load data from address (attribute + the value in x)
- STA $2007             ; write to PPU
- INX                   ; X = X + 1
- CPX #$30              ; Compare X to hex $08, decimal 8 - copying 8 bytes
+ LDA attribute, x       ; load data from address (attribute + the value in x)
+ STA $2007              ; write to PPU
+ INX                    ; X = X + 1
+ CPX #$40               ; Compare X to hex $40, decimal 64
  BNE LoadAttributeLoop  ; Branch to LoadAttributeLoop if compare was Not Equal to zero
-                        ; if compare was equal to 128, keep going down
+                        ; if compare was equal to 64, keep going down
 
 						
   LDA #%10010000   ; enable NMI, sprites from Pattern Table 0, background from Pattern Table 1
@@ -146,6 +119,11 @@ LoadAttributeLoop:
 
   LDA #%00011110   ; enable sprites, enable background, no clipping on left side
   STA $2001
+
+  LDA #$00         ; set PPUSCROLL x and y coords
+  STA $2005        ; x
+  LDA #$00
+  STA $2005        ; y
 
 Forever:
   JMP Forever     ;jump back to Forever, infinite loop
@@ -395,113 +373,73 @@ IdleSpriteDone:
   .bank 1
   .org $E000
 palette:
-  .db $0d,$07,$17,$37	; background palettes
-  .db $01,$0F,$17,$37
-  .db $38,$39,$3a,$3b
-  .db $3c,$3d,$3e,$0f
+  ; background palettes
+  .db $0F,$07,$17,$37 ; 00
+  .db $01,$0F,$17,$37 ; 01
+  .db $0F,$1A,$1C,$3A ; 10
+  .db $3C,$3D,$3E,$0F ; 11
   
-  .db $0C,$1c,$15,$14	; sprite palettes
-  .db $31,$02,$38,$3c
-  .db $22,$29,$1A,$0F
-  .db $22,$36,$17,$0F
+  ; sprite palettes
+  .db $0C,$1c,$15,$14 ; 00
+  .db $31,$02,$38,$3c ; 01
+  .db $22,$29,$1A,$0F ; 10
+  .db $22,$36,$17,$0F ; 11
 
 background:
 
-  .db $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF  ;;row 1
-  .db $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF  ;;all blank
+  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ;  0 not seen
+  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ;  1
+  .db $FF,$0C,$0E,$0D, $04,$18,$FF,$24, $1E,$1C,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ;  2
+  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ;  3
 
-  .db $FF,$0C,$0E,$0D,$04,$18,$FF,$24,$1E,$1C,$FF,$FF,$FF,$FF,$FF,$FF  ;;row 2
-  .db $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF  ;;hud text
-  
-  .db $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF  ;;row 3
-  .db $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF  ;;all blank
+  .db $FF,$25,$26,$26, $26,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ;  4
+  .db $FF,$27,$28,$29, $2A,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ;  5
+  .db $FF,$27,$2F,$31, $32,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ;  6
+  .db $FF,$27,$30,$33, $31,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ;  7
 
-  .db $FF,$25,$26,$26,$26,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF  ;;row 4
-  .db $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF  ;;wall
+  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ;  8
+  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ;  9
+  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ; 10
+  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ; 11
 
-  .db $FF,$27,$28,$29,$2A,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF  ;;row 2
-  .db $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF  ;;all sky
+  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ; 12
+  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ; 13
+  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ; 14
+  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ; 15
 
-  .db $FF,$27,$2F,$31,$32,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF  ;;row 3
-  .db $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF  ;;all sky
+  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ; 16
+  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ; 17
+  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ; 18
+  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ; 19
 
-  .db $FF,$27,$30,$33,$31,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF  ;;row 4
-  .db $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF  ;;all sky
+  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ; 20
+  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ; 21
+  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ; 22
+  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ; 23
 
-  .db $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF  ;;row 5
-  .db $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF  ;;all sky
+  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ; 24
+  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ; 25
+  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ; 26
+  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ; 27
 
-  .db $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF  ;;row 6
-  .db $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF  ;;all sky
+  .db $2D,$2D,$2D,$2D, $2D,$2D,$2D,$2D, $2D,$2D,$2D,$2D, $2D,$2D,$2D,$2D, $2D,$2D,$2D,$2D, $2D,$2D,$2D,$2D, $2D,$2D,$2D,$2D, $2D,$2D,$2D,$2D  ; 28 Last row
+  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ; 29
+  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ; 30
+  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ; 31
 
-  .db $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF  ;;row 7
-  .db $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF  ;;all sky
-
-  .db $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF  ;;row 8
-  .db $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF  ;;all sky
-
-  .db $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF  ;;row 9
-  .db $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF  ;;all sky
-
-  .db $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF  ;;row 10
-  .db $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF  ;;all sky 
-
-  .db $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF  ;;row 11
-  .db $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF  ;;all sky 
-
-  .db $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF  ;;row 12
-  .db $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF  ;;all sky 
-
-  .db $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF  ;;row 13
-  .db $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF  ;;all sky 
-
-  .db $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF  ;;row 15
-  .db $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF  ;;all sky 
-
-  .db $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF  ;;row 16
-  .db $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF  ;;all sky 
-
-  .db $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF  ;;row 17
-  .db $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF  ;;all sky 
-
-  .db $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF  ;;row 18
-  .db $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF  ;;all sky 
-
-  .db $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF  ;;row 19
-  .db $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF  ;;all sky 
-
-  .db $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF  ;;row 20
-  .db $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF  ;;all sky 
-
-  .db $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF  ;;row 20
-  .db $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF  ;;all sky 
-
-  .db $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF  ;;row 20
-  .db $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF  ;;all sky 
-
-  .db $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF  ;;row 20
-  .db $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF  ;;all sky 
-
-  .db $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF  ;;row 20
-  .db $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF  ;;all sky 
-  
-  .db $2D,$2D,$2D,$2D,$2D,$2D,$2D,$2D,$2D,$2D,$2D,$2D,$2D,$2D,$2D,$2D  ;;row 14
-  .db $2D,$2D,$2D,$2D,$2D,$2D,$2D,$2D,$2D,$2D,$2D,$2D,$2D,$2D,$2D,$2D  ;;all sky 
-  
-  .db $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF  ;;row 20
-  .db $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF  ;;all sky 
-  
 attribute:
-  .db %01010101, %00010000, %00000000, %00000000, %00000000, %00000000, %00000000, %00000000
-  .db %01010101, %00010001, %00000000, %00000000, %00000000, %00000000, %00000000, %00000000
-  .db %01010101, %00000000, %00000000, %00000000, %00000000, %00000000, %00000000, %00000000
-  .db %00000000, %00000000, %00000000, %00000000, %00000000, %00000000, %00000000, %00000000
-  .db %00000000, %00000000, %00000000, %00000000, %00000000, %00000000, %00000000, %00000000
-  .db %00000000, %00000000, %00000000, %00000000, %00000000, %00000000, %00000000, %00000000
-  .db %00000000, %00000000, %00000000, %00000000, %00000000, %00000000, %00000000, %00000000
+; Burbl Turtl
+;      BRBLTRTL   BRBLTRTL   BRBLTRTL   BRBLTRTL   BRBLTRTL   BRBLTRTL   BRBLTRTL   BRBLTRTL
+  .db %00000000, %00000000, %00000000, %00000000, %00000000, %00000000, %00000000, %00000000 ;  0-3
+  .db %01010101, %00010001, %00000000, %00000000, %00000000, %00000000, %00000000, %00000000 ;  4-7
+  .db %00000000, %00000000, %00000000, %00000000, %00000000, %00000000, %00000000, %00000000 ;  8-11
+  .db %00000000, %00000000, %00000000, %00000000, %00000000, %00000000, %00000000, %00000000 ; 12-15
+  .db %00000000, %00000000, %00000000, %00000000, %00000000, %00000000, %00000000, %00000000 ; 16-19
+  .db %00000000, %00000000, %00000000, %00000000, %00000000, %00000000, %00000000, %00000000 ; 20-23
+  .db %00000000, %00000000, %00000000, %00000000, %00000000, %00000000, %00000000, %00000000 ; 24-27
+  .db %00001010, %00000101, %00001010, %00000101, %00001010, %00000101, %00001010, %00000101 ; 28-31
+;      BRBLTRTL   BRBLTRTL   BRBLTRTL   BRBLTRTL   BRBLTRTL   BRBLTRTL   BRBLTRTL   BRBLTRTL
 
-
-  ;    BRBLTRTL Burble Turtle
 sprites:
      ;vert tile attr horiz
   .db $80, $02, $00, $80   ;sprite 0
