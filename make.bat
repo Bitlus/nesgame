@@ -11,3 +11,5 @@ IF NOT EXIST bin (
 
 MOVE src\*.nes .\bin
 MOVE src\*.fns .\bin
+
+pause
