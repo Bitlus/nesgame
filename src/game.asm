@@ -8,6 +8,8 @@
 
   .rsset $0000
 isWalking .rs 1
+animationCounter .rs 1
+weedFrame .rs 1
     
   .bank 0
   .org $C000 
@@ -109,6 +111,11 @@ LoadSpritesLoop:
 
   LDA #%00010000   ; enable sprites
   STA $2001
+
+InitVariables:
+  LDA #$00
+  STA animationCounter
+  STA weedFrame
 
 Forever:
   JMP Forever     ;jump back to Forever, infinite loop
@@ -349,7 +356,103 @@ IdleSprite:
   STA $020D
 
 IdleSpriteDone:
-  
+
+HandleAnimation:
+  INC animationCounter
+  LDA animationCounter
+  CMP #$0A ; Speed of animation (Framerate... sorta)
+  BNE UpdateCactus
+  LDA #$00
+  STA animationCounter
+  INC weedFrame
+  LDA weedFrame
+  CMP #$03
+  BNE UpdateCactus
+  LDA #$00
+  STA weedFrame
+
+UpdateCactus:
+  LDA weedFrame
+  CMP #$00
+  BEQ Frame1
+  CMP #$01
+  BEQ Frame3
+  CMP #$02
+  BEQ Frame4
+  CMP #$03
+  BEQ Frame4
+
+
+Frame1:
+  LDA #%00000000 ; Set no flips
+  STA $0212
+  STA $0216
+  STA $021A
+  STA $021E
+
+  LDA #$06
+  STA $0211
+  LDA #$07
+  STA $0215
+  LDA #$08
+  STA $0219
+  LDA #$09
+  STA $021D
+  JMP ReturnFromInterrupt
+Frame2:
+  LDA #%10000000 ; Flip vertical
+  STA $0212
+  STA $021E
+
+  LDA #%01000000 ; Flip horizontal
+  STA $0216
+  STA $021A
+
+
+  LDA #$08
+  STA $0211
+  LDA #$06
+  STA $0215
+  LDA #$09
+  STA $0219
+  LDA #$07
+  STA $021D
+  JMP ReturnFromInterrupt
+Frame3:
+  LDA #%11000000 ; Set both flips
+  STA $0212
+  STA $0216
+  STA $021A
+  STA $021E
+
+  LDA #$09
+  STA $0211
+  LDA #$08
+  STA $0215
+  LDA #$07
+  STA $0219
+  LDA #$06
+  STA $021D
+  JMP ReturnFromInterrupt
+Frame4:
+  LDA #%10000000 ; Set vertical flips
+  STA $0212
+  STA $0216
+  STA $021A
+  STA $021E
+
+  LDA #$08
+  STA $0211
+  LDA #$09
+  STA $0215
+  LDA #$06
+  STA $0219
+  LDA #$07
+  STA $021D
+  JMP ReturnFromInterrupt
+
+
+ReturnFromInterrupt:
   RTI             ; return from interrupt
  
 ;;;;;;;;;;;;;;  
@@ -375,6 +478,15 @@ sprites:
   .db $88, $12, $00, $80   ;sprite 2
   .db $88, $13, $00, $88   ;sprite 3
 
+cactus:
+  .db $10, $06, $00, $10   ;sprite 0
+  .db $10, $07, $00, $18   ;sprite 1
+  .db $18, $08, $00, $10   ;sprite 2
+  .db $18, $09, $00, $18   ;sprite 3
+
+tumbleWeedFrame1:
+  .db $06, $07, $08, $09
+
   .org $FFFA     ;first of the three vectors starts here
   .dw NMI        ;when an NMI happens (once per frame if enabled) the 
                    ;processor will jump to the label NMI:
@@ -389,3 +501,4 @@ sprites:
   .bank 2
   .org $0000
   .incbin "cowboy.chr"   ;includes 8KB graphics file from SMB1
+
