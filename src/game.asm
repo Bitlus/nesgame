@@ -122,7 +122,6 @@ LoadAttributeLoop:
 
   LDA #$00         ; set PPUSCROLL x and y coords
   STA $2005        ; x
-  LDA #$00
   STA $2005        ; y
 
 Forever:
