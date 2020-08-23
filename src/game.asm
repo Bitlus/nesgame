@@ -10,6 +10,8 @@
 isWalking .rs 1
 animationCounter .rs 1
 weedFrame .rs 1
+playerAnimationCounter .rs 1
+playerFrame .rs 1
     
   .bank 0
   .org $C000 
@@ -116,6 +118,8 @@ InitVariables:
   LDA #$00
   STA animationCounter
   STA weedFrame
+  STA playerAnimationCounter
+  STA playerFrame
 
 Forever:
   JMP Forever     ;jump back to Forever, infinite loop
@@ -184,13 +188,13 @@ ReadUp:
   STA $020E
 
   ; Set correct sprite tiles
-  LDA #$23
+  LDA #$21
   STA $0201
-  LDA #$23
+  LDA #$21
   STA $0205
-  LDA #$33
+  LDA #$31
   STA $0209
-  LDA #$33
+  LDA #$31
   STA $020D
 
   ; Update player sprites Y positions
@@ -227,13 +231,13 @@ ReadDown:
   STA $020E
 
   ; Set correct sprite tiles
-  LDA #$22
+  LDA #$20
   STA $0201
-  LDA #$22
+  LDA #$20
   STA $0205
-  LDA #$32
+  LDA #$30
   STA $0209
-  LDA #$32
+  LDA #$30
   STA $020D
 
   LDX #$00
@@ -267,17 +271,9 @@ ReadLeft:
   STA $020A
   STA $020E
 
-  ; Set correct sprite tiles
-  LDA #$01
-  STA $0201
-  LDA #$00
-  STA $0205
-  LDA #$11
-  STA $0209
-  LDA #$10
-  STA $020D
+  JMP LeftAnimation
   
-
+InitLeftLoop:
   LDX #$00
 MoveLeftLoop:
   LDA $0203, X
@@ -302,23 +298,9 @@ ReadRight:
   LDA #$01
   STA isWalking
   
-  ; Change player sprite direction
-  LDA #%00000000 ; Set to not flip horizontal
-  STA $0202
-  STA $0206
-  STA $020A
-  STA $020E
+  JMP RightAnimation
 
-  ; Set correct sprite tiles
-  LDA #$00
-  STA $0201
-  LDA #$01
-  STA $0205
-  LDA #$10
-  STA $0209
-  LDA #$11
-  STA $020D
-
+InitRightLoop:
   LDX #$00
 MoveRightLoop:
   LDA $0203, X
@@ -357,103 +339,15 @@ IdleSprite:
 
 IdleSpriteDone:
 
-HandleAnimation:
-  INC animationCounter
-  LDA animationCounter
-  CMP #$0A ; Speed of animation (Framerate... sorta)
-  BNE UpdateCactus
-  LDA #$00
-  STA animationCounter
-  INC weedFrame
-  LDA weedFrame
-  CMP #$03
-  BNE UpdateCactus
-  LDA #$00
-  STA weedFrame
-
-UpdateCactus:
-  LDA weedFrame
-  CMP #$00
-  BEQ Frame1
-  CMP #$01
-  BEQ Frame3
-  CMP #$02
-  BEQ Frame4
-  CMP #$03
-  BEQ Frame4
-
-
-Frame1:
-  LDA #%00000000 ; Set no flips
-  STA $0212
-  STA $0216
-  STA $021A
-  STA $021E
-
-  LDA #$06
-  STA $0211
-  LDA #$07
-  STA $0215
-  LDA #$08
-  STA $0219
-  LDA #$09
-  STA $021D
-  JMP ReturnFromInterrupt
-Frame2:
-  LDA #%10000000 ; Flip vertical
-  STA $0212
-  STA $021E
-
-  LDA #%01000000 ; Flip horizontal
-  STA $0216
-  STA $021A
-
-
-  LDA #$08
-  STA $0211
-  LDA #$06
-  STA $0215
-  LDA #$09
-  STA $0219
-  LDA #$07
-  STA $021D
-  JMP ReturnFromInterrupt
-Frame3:
-  LDA #%11000000 ; Set both flips
-  STA $0212
-  STA $0216
-  STA $021A
-  STA $021E
-
-  LDA #$09
-  STA $0211
-  LDA #$08
-  STA $0215
-  LDA #$07
-  STA $0219
-  LDA #$06
-  STA $021D
-  JMP ReturnFromInterrupt
-Frame4:
-  LDA #%10000000 ; Set vertical flips
-  STA $0212
-  STA $0216
-  STA $021A
-  STA $021E
-
-  LDA #$08
-  STA $0211
-  LDA #$09
-  STA $0215
-  LDA #$06
-  STA $0219
-  LDA #$07
-  STA $021D
-  JMP ReturnFromInterrupt
+AnimationFile:
+  .include "animation.asm"
 
 
 ReturnFromInterrupt:
   RTI             ; return from interrupt
+
+PlayerAnimationFile:
+  .include "player-animation.asm"
  
 ;;;;;;;;;;;;;;  
   
