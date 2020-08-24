@@ -179,24 +179,10 @@ ReadUp:
   LDA #$01
   STA isWalking
 
-  ; Change player sprite direction
-  LDA #%00000000 ; Set to not flip horizontal
-  STA $0202
-  STA $020A
-  LDA #%01000000 ; Set to flip horizontal
-  STA $0206
-  STA $020E
-
   ; Set correct sprite tiles
-  LDA #$21
-  STA $0201
-  LDA #$21
-  STA $0205
-  LDA #$31
-  STA $0209
-  LDA #$31
-  STA $020D
+  JMP UpAnimation
 
+InitUpLoop:
   ; Update player sprites Y positions
   LDX #$00
 MoveUpLoop:
@@ -222,24 +208,9 @@ ReadDown:
   LDA #$01
   STA isWalking
 
-  ; Change player sprite direction
-  LDA #%00000000 ; Set to not flip horizontal
-  STA $0202
-  STA $020A
-  LDA #%01000000 ; Set to flip horizontal
-  STA $0206
-  STA $020E
+  JMP DownAnimation
 
-  ; Set correct sprite tiles
-  LDA #$20
-  STA $0201
-  LDA #$20
-  STA $0205
-  LDA #$30
-  STA $0209
-  LDA #$30
-  STA $020D
-
+InitDownLoop:
   LDX #$00
 MoveDownLoop:
   LDA $0200, X
@@ -263,13 +234,6 @@ ReadLeft:
   ; Set isWalking flag
   LDA #$01
   STA isWalking
-
-  ; Change player sprite direction
-  LDA #%01000000 ; Set flip horizontal
-  STA $0202
-  STA $0206
-  STA $020A
-  STA $020E
 
   JMP LeftAnimation
   
@@ -340,6 +304,7 @@ IdleSprite:
 IdleSpriteDone:
 
 AnimationFile:
+  JMP ReturnFromInterrupt
   .include "animation.asm"
 
 
@@ -357,7 +322,7 @@ PlayerAnimationFile:
   .org $E000
 palette:
   .db $0F,$31,$32,$33,$34,$35,$36,$37,$38,$39,$3A,$3B,$3C,$3D,$3E,$0F
-  .db $2D,$2C,$0C,$30,$31,$02,$38,$3C,$0F,$1C,$15,$14,$31,$02,$38,$3C
+  .db $37,$11,$0D,$20,$31,$02,$38,$3C,$0F,$1C,$15,$14,$31,$02,$38,$3C
 
 ;background:
 ;  .db 
