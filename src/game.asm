@@ -373,9 +373,9 @@ IdleSpriteDone:
   .org $E000
 palette:
   ; background palettes
-  .db $0F,$07,$17,$37 ; 00
-  .db $01,$0F,$17,$37 ; 01
-  .db $0F,$1A,$1C,$3A ; 10
+  .db $0F,$07,$17,$30 ; 00
+  .db $01,$0F,$17,$30 ; 01
+  .db $0F,$17,$18,$30 ; 10
   .db $3C,$3D,$3E,$0F ; 11
   
   ; sprite palettes
@@ -389,36 +389,36 @@ background:
   .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ;  0 not seen
   .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ;  1
   .db $FF,$12,$00,$0B, $0E,$0E,$0D,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $08,$13,$04,$0C, $FF,$FF,$FF,$FF  ;  2
-  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ;  3
+  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $4A,$4B,$4C,$4D, $FF,$FF,$FF,$FF  ;  3
 
-  .db $FF,$0C,$0E,$0D, $04,$18,$FF,$24, $23,$23,$23,$23, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ;  4
-  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ;  5
-  .db $FF,$0B,$08,$05, $04,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ;  6
+  .db $FF,$0C,$0E,$0D, $04,$18,$FF,$24, $23,$23,$23,$23, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $4E,$FF,$FF,$4F, $FF,$FF,$FF,$FF  ;  4
+  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $50,$FF,$FF,$51, $FF,$FF,$FF,$FF  ;  5
+  .db $FF,$0B,$08,$05, $04,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $52,$53,$54,$55, $FF,$FF,$FF,$FF  ;  6
   .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ;  7
                                                                                                                                  
   .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ;  8
-  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ;  9
-  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ; 10
-  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ; 11
-                                                                                                                                             
-  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ; 12
-  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ; 13
-  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ; 14
-  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ; 15
-                                                                                                                                 
-  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ; 16
-  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ; 17
-  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ; 18
-  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ; 19
-                                                                                                                                             
-  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ; 20
-  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ; 21
-  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ; 22
-  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ; 23
-                                                                                                                                 
-  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ; 24
-  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ; 25
-  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ; 26
+  .db $FF,$25,$26,$26, $26,$26,$26,$26, $26,$26,$26,$26, $26,$2D,$3D,$2D, $3D,$2D,$3D,$26, $26,$26,$26,$26, $26,$26,$26,$26, $26,$26,$25,$FF  ;  9
+  .db $FF,$27,$28,$29, $2A,$2B,$2A,$2B, $2A,$2B,$2A,$2B, $2A,$2B,$2A,$2C, $3C,$3A,$3B,$3A, $3B,$3A,$3B,$3A, $3B,$3A,$3B,$3A, $29,$38,$27,$FF  ; 10
+  .db $FF,$27,$2F,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$41,$27,$FF  ; 11
+                                                                                                                                         
+  .db $FF,$27,$30,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$43,$27,$FF  ; 12
+  .db $FF,$27,$2F,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$41,$27,$FF  ; 13
+  .db $FF,$27,$30,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$43,$27,$FF  ; 14
+  .db $FF,$2E,$2F,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$41,$2E,$FF  ; 15
+                                                                                                                                         
+  .db $FF,$3E,$2F,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$41,$3E,$FF  ; 16
+  .db $FF,$2E,$2F,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$41,$2E,$FF  ; 17
+  .db $FF,$3E,$2F,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$41,$3E,$FF  ; 18
+  .db $FF,$2E,$2F,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$41,$2E,$FF  ; 19
+                                                                                                                                         
+  .db $FF,$3E,$2F,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$41,$3E,$FF  ; 20
+  .db $FF,$27,$40,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$44,$27,$FF  ; 21
+  .db $FF,$27,$2F,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$41,$27,$FF  ; 22
+  .db $FF,$27,$40,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$44,$27,$FF  ; 23
+                                                                                                                                         
+  .db $FF,$27,$2F,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$41,$27,$FF  ; 24
+  .db $FF,$27,$38,$45, $46,$47,$46,$47, $46,$47,$46,$47, $46,$45,$45,$45, $45,$45,$46,$45, $49,$48,$49,$48, $49,$48,$49,$48, $45,$28,$27,$FF  ; 25
+  .db $FF,$25,$26,$26, $26,$26,$26,$26, $26,$26,$26,$26, $26,$2D,$3D,$2D, $3D,$2D,$3D,$26, $26,$26,$26,$26, $26,$26,$26,$26, $26,$26,$25,$FF  ; 26
   .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ; 27
                                                                                                                                              
   .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ; 28 last row
@@ -429,13 +429,13 @@ background:
 attribute:
 ; Burbl Turtl
 ;      BRBLTRTL   BRBLTRTL   BRBLTRTL   BRBLTRTL   BRBLTRTL   BRBLTRTL   BRBLTRTL   BRBLTRTL
-  .db %00000000, %00000000, %00000000, %00000000, %00000000, %00000000, %00000000, %00000000 ;  0-3
-  .db %00000000, %00000000, %00000000, %00000000, %00000000, %00000000, %00000000, %00000000 ;  4-7
-  .db %00000000, %00000000, %00000000, %00000000, %00000000, %00000000, %00000000, %00000000 ;  8-11
-  .db %00000000, %00000000, %00000000, %00000000, %00000000, %00000000, %00000000, %00000000 ; 12-15
-  .db %00000000, %00000000, %00000000, %00000000, %00000000, %00000000, %00000000, %00000000 ; 16-19
-  .db %00000000, %00000000, %00000000, %00000000, %00000000, %00000000, %00000000, %00000000 ; 20-23
-  .db %00000000, %00000000, %00000000, %00000000, %00000000, %00000000, %00000000, %00000000 ; 24-27
+  .db %00000000, %00000000, %00000000, %00000000, %00000000, %00000000, %10100000, %00000000 ;  0-3
+  .db %00000000, %00000000, %00000000, %00000000, %00000000, %00000000, %10101010, %00000000 ;  4-7
+  .db %01010101, %01010101, %01010101, %01010101, %01010101, %01010101, %01010101, %01010101 ;  8-11
+  .db %01010101, %01010101, %01010101, %01010101, %01010101, %01010101, %01010101, %01010101 ; 12-15
+  .db %01010101, %01010101, %01010101, %01010101, %01010101, %01010101, %01010101, %01010101 ; 16-19
+  .db %01010101, %01010101, %01010101, %01010101, %01010101, %01010101, %01010101, %01010101 ; 20-23
+  .db %01010101, %01010101, %01010101, %01010101, %01010101, %01010101, %01010101, %01010101 ; 24-27
   .db %00000000, %00000000, %00000000, %00000000, %00000000, %00000000, %00000000, %00000000 ; 28-31
 ;      BRBLTRTL   BRBLTRTL   BRBLTRTL   BRBLTRTL   BRBLTRTL   BRBLTRTL   BRBLTRTL   BRBLTRTL
 
