@@ -12,6 +12,8 @@ animationCounter .rs 1
 weedFrame .rs 1
 playerAnimationCounter .rs 1
 playerFrame .rs 1
+bg_ptr_lo .rs 1 ; bg pointer low byte
+bg_ptr_hi .rs 1 ; bg pointer high byte
     
   .bank 0
   .org $C000 
@@ -35,13 +37,13 @@ clrmem:
   LDA #$00
   STA $0000, x
   STA $0100, x
-  STA $0200, x
+  STA $0300, x
   STA $0400, x
   STA $0500, x
   STA $0600, x
   STA $0700, x
   LDA #$FE
-  STA $0300, x
+  STA $0200, x    ;move all sprites off screen
   INX
   BNE clrmem
    
@@ -59,43 +61,11 @@ LoadPalettes:
   LDX #$00              ; start out at 0
 LoadPalettesLoop:
   LDA palette, x        ; load data from address (palette + the value in x)
-                          ; 1st time through loop it will load palette+0
-                          ; 2nd time through loop it will load palette+1
-                          ; 3rd time through loop it will load palette+2
-                          ; etc
   STA $2007             ; write to PPU
   INX                   ; X = X + 1
   CPX #$20              ; Compare X to hex $10, decimal 16 - copying 16 bytes = 4 sprites
   BNE LoadPalettesLoop  ; Branch to LoadPalettesLoop if compare was Not Equal to zero
                         ; if compare was equal to 32, keep going down
-
-;LoadBackground:
-;LDA $2002               ; read PPU status to reset the high/low latch
-;LDA #$20
-;STA $2006               ; write the high byte of $2000 address
-;LDA #$00
-;STA $2006               ; write the low byte of $2000 address
-;LDX #$00                 ; starting loop counter at 0
-;LoadBackgroundLoop:
-;LDA background, x       ; load data from address background + value in x
-;STA $2007               ; write data to PPU
-;INX                     ; increment x
-;CPX #$80                ; while x != $80, load the next background value
-;BNE LoadBackgroundLoop
-
-;LoadAttribute:
-;LDA $2002               ; read PPU status to reset the high/low latch
-;LDA #$23
-;STA $2006               ; write write the high byte of $2300 addy
-;LDA #$00
-;STA $2006               ; write the lowe byte of $2300 addy
-;LDX #$00                ; starting loop counter at 0
-;LoadAttributeLoop:
-;LDA attribute, x        ; load data from addy + x
-;STA $2007               ; write data to PPU
-;INX                     ; increment loop counter
-;CPX #$08                ; while x != $08, load next value
-;BNE LoadAttributeLoop
 
 LoadSprites:
   LDX #$00              ; start at 0
@@ -106,12 +76,52 @@ LoadSpritesLoop:
   CPX #$20              ; Compare X to hex $20, decimal 32
   BNE LoadSpritesLoop   ; Branch to LoadSpritesLoop if compare was Not Equal to zero
                         ; if compare was equal to 32, keep going down
-              
 
-  LDA #%10000000   ; enable NMI, sprites from Pattern Table 1
+LoadBackground:
+  LDA $2002       ; reset high/low latch
+  LDA #$20
+  STA $2006       ; write high byte
+  LDA #$00
+  STA $2006       ; write low byte
+
+  ; set up pointer to bg
+  LDA #LOW(background) ; #$00
+  STA bg_ptr_lo  ; put low byte of bg into pointer
+  LDA #HIGH(background)
+  STA bg_ptr_hi   ; put high byte into pointer
+
+  LDX #$04
+  LDY #$00
+LoadBackgroundLoop:
+  LDA [bg_ptr_lo], y ; one byte from address + y
+  STA $2007
+  INY                 ; increment inner loop counter
+  BNE LoadBackgroundLoop 
+  INC bg_ptr_hi
+  DEX 
+  BNE LoadBackgroundLoop
+      
+LoadAttribute:
+ CLC
+ LDA $2002              ; read PPU status to reset the high/low latch
+ LDA #$23
+ STA $2006              ; write the high byte of $23C0 address
+ LDA #$C0
+ STA $2006              ; write the low byte of $23C0 address
+ LDX #$00               ; start out at 0
+LoadAttributeLoop:
+ LDA attribute, x       ; load data from address (attribute + the value in x)
+ STA $2007              ; write to PPU
+ INX                    ; X = X + 1
+ CPX #$40               ; Compare X to hex $40, decimal 64
+ BNE LoadAttributeLoop  ; Branch to LoadAttributeLoop if compare was Not Equal to zero
+                        ; if compare was equal to 64, keep going down
+
+						
+  LDA #%10010000   ; enable NMI, sprites from Pattern Table 0, background from Pattern Table 1
   STA $2000
 
-  LDA #%00010000   ; enable sprites
+  LDA #%00011110   ; enable sprites, enable background, no clipping on left side
   STA $2001
 
 InitVariables:
@@ -120,6 +130,9 @@ InitVariables:
   STA weedFrame
   STA playerAnimationCounter
   STA playerFrame
+  LDA #$00         ; set PPUSCROLL x and y coords
+  STA $2005        ; x
+  STA $2005        ; y
 
 Forever:
   JMP Forever     ;jump back to Forever, infinite loop
@@ -316,19 +329,76 @@ PlayerAnimationFile:
  
 ;;;;;;;;;;;;;;  
   
-  
-  
+
   .bank 1
   .org $E000
 palette:
-  .db $0F,$31,$32,$33,$34,$35,$36,$37,$38,$39,$3A,$3B,$3C,$3D,$3E,$0F
-  .db $37,$11,$0D,$20,$31,$02,$38,$3C,$0F,$1C,$15,$14,$31,$02,$38,$3C
+  ; background palettes
+  .db $0F,$07,$17,$37 ; 00
+  .db $01,$0F,$17,$37 ; 01
+  .db $0F,$1A,$1C,$3A ; 10
+  .db $3C,$3D,$3E,$0F ; 11
+  
+  ; sprite palettes
+  .db $0C,$2C,$0F,$30 ; 00
+  .db $31,$02,$38,$3c ; 01
+  .db $22,$29,$1A,$0F ; 10
+  .db $22,$36,$17,$0F ; 11
 
-;background:
-;  .db 
+background:
 
-;attribute:
-;  .db
+  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ;  0 not seen
+  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ;  1
+  .db $FF,$0C,$0E,$0D, $04,$18,$FF,$24, $1E,$1C,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ;  2
+  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ;  3
+
+  .db $FF,$25,$26,$26, $26,$26,$26,$26, $26,$26,$26,$26, $26,$2D,$3D,$2D, $3D,$2D,$3D,$26, $26,$26,$26,$26, $26,$26,$26,$26, $26,$26,$25,$FF  ;  4
+  .db $FF,$27,$28,$29, $2A,$2B,$2A,$2B, $2A,$2B,$2A,$2B, $2A,$2B,$2A,$2C, $3C,$3A,$3B,$3A, $3B,$3A,$3B,$3A, $3B,$3A,$3B,$3A, $29,$38,$27,$FF  ;  5
+  .db $FF,$27,$2F,$31, $32,$33,$31,$32, $33,$31,$32,$33, $31,$32,$33,$31, $32,$33,$31,$32, $33,$31,$32,$33, $31,$32,$33,$31, $32,$41,$27,$FF  ;  6
+  .db $FF,$27,$30,$33, $31,$32,$33,$31, $32,$33,$31,$32, $33,$31,$32,$33, $31,$32,$33,$31, $32,$33,$31,$32, $33,$31,$32,$33, $31,$3A,$27,$FF  ;  7
+                                                                                                                                 
+  .db $FF,$27,$2F,$31, $32,$33,$31,$32, $33,$31,$32,$33, $31,$32,$33,$31, $32,$33,$31,$32, $33,$31,$32,$33, $31,$32,$33,$31, $32,$41,$27,$FF  ;  8
+  .db $FF,$27,$30,$33, $31,$32,$33,$31, $32,$33,$31,$32, $33,$31,$32,$33, $31,$32,$33,$31, $32,$33,$31,$32, $33,$31,$32,$33, $31,$43,$27,$FF  ;  9
+  .db $FF,$27,$2F,$31, $32,$33,$31,$32, $33,$31,$32,$33, $31,$32,$33,$31, $32,$33,$31,$32, $33,$31,$32,$33, $31,$32,$33,$31, $32,$41,$27,$FF  ; 10
+  .db $FF,$27,$30,$33, $31,$32,$33,$31, $32,$33,$31,$32, $33,$31,$32,$33, $31,$32,$33,$31, $32,$33,$31,$32, $33,$31,$32,$33, $31,$43,$27,$FF  ; 11
+                                                                                                                                 
+  .db $FF,$2E,$2F,$31, $32,$33,$31,$32, $33,$31,$32,$33, $31,$32,$33,$31, $32,$33,$31,$32, $33,$31,$32,$33, $31,$32,$33,$31, $32,$41,$2E,$FF  ; 12
+  .db $FF,$3E,$2F,$33, $31,$32,$33,$31, $32,$33,$31,$32, $33,$31,$32,$33, $31,$32,$33,$31, $32,$33,$31,$32, $33,$31,$32,$33, $31,$41,$3E,$FF  ; 13
+  .db $FF,$2E,$2F,$31, $32,$33,$31,$32, $33,$31,$32,$33, $31,$32,$33,$31, $32,$33,$31,$32, $33,$31,$32,$33, $31,$32,$33,$31, $32,$41,$2E,$FF  ; 14
+  .db $FF,$3E,$3F,$33, $31,$32,$33,$31, $32,$33,$31,$32, $33,$31,$32,$33, $31,$32,$33,$31, $32,$33,$31,$32, $33,$31,$32,$33, $31,$42,$3E,$FF  ; 15
+                                                                                                                                 
+  .db $FF,$2E,$2F,$31, $32,$33,$31,$32, $33,$31,$32,$33, $31,$32,$33,$31, $32,$33,$31,$32, $33,$31,$32,$33, $31,$32,$33,$31, $32,$41,$2E,$FF  ; 16
+  .db $FF,$3E,$2F,$33, $31,$32,$33,$31, $32,$33,$31,$32, $33,$31,$32,$33, $31,$32,$33,$31, $32,$33,$31,$32, $33,$31,$32,$33, $31,$41,$3E,$FF  ; 17
+  .db $FF,$2E,$2F,$31, $32,$33,$31,$32, $33,$31,$32,$33, $31,$32,$33,$31, $32,$33,$31,$32, $33,$31,$32,$33, $31,$32,$33,$31, $32,$41,$2E,$FF  ; 18
+  .db $FF,$3E,$3F,$33, $31,$32,$33,$31, $32,$33,$31,$32, $33,$31,$32,$33, $31,$32,$33,$31, $32,$33,$31,$32, $33,$31,$32,$33, $31,$42,$3E,$FF  ; 19
+                                                                                                                                 
+  .db $FF,$27,$46,$31, $32,$33,$31,$32, $33,$31,$32,$33, $31,$32,$33,$31, $32,$33,$31,$32, $33,$31,$32,$33, $31,$32,$33,$31, $32,$48,$27,$FF  ; 20
+  .db $FF,$27,$2F,$33, $31,$32,$33,$31, $32,$33,$31,$32, $33,$31,$32,$33, $31,$32,$33,$31, $32,$33,$31,$32, $33,$31,$32,$33, $31,$41,$27,$FF  ; 21
+  .db $FF,$27,$40,$31, $32,$33,$31,$32, $33,$31,$32,$33, $31,$32,$33,$31, $32,$33,$31,$32, $33,$31,$32,$33, $31,$32,$33,$31, $32,$44,$27,$FF  ; 22
+  .db $FF,$27,$2F,$33, $31,$32,$33,$31, $32,$33,$31,$32, $33,$31,$32,$33, $31,$32,$33,$31, $32,$33,$31,$32, $33,$31,$32,$33, $31,$41,$27,$FF  ; 23
+                                                                                                                                 
+  .db $FF,$27,$40,$31, $32,$33,$31,$32, $33,$31,$32,$33, $31,$32,$33,$31, $32,$33,$31,$32, $33,$31,$32,$33, $31,$32,$33,$31, $32,$44,$27,$FF  ; 24
+  .db $FF,$27,$2F,$33, $31,$32,$33,$31, $32,$33,$31,$32, $33,$31,$32,$33, $31,$32,$33,$31, $32,$33,$31,$32, $33,$31,$32,$33, $31,$41,$27,$FF  ; 25
+  .db $FF,$27,$38,$45, $46,$47,$46,$47, $46,$47,$46,$47, $46,$45,$45,$45, $45,$45,$46,$45, $49,$48,$49,$48, $49,$48,$49,$48, $45,$28,$27,$FF  ; 26
+  .db $FF,$25,$26,$26, $26,$26,$26,$26, $26,$26,$26,$26, $26,$2D,$3D,$2D, $3D,$2D,$3D,$26, $26,$26,$26,$26, $26,$26,$26,$26, $26,$26,$25,$FF  ; 27
+
+  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ; 28 last row
+  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ; 29
+  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ; 30
+  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ; 31
+
+attribute:
+; Burbl Turtl
+;      BRBLTRTL   BRBLTRTL   BRBLTRTL   BRBLTRTL   BRBLTRTL   BRBLTRTL   BRBLTRTL   BRBLTRTL
+  .db %00000000, %00000000, %00000000, %00000000, %00000000, %00000000, %00000000, %00000000 ;  0-3
+  .db %01010101, %01010101, %01010101, %01010101, %01010101, %01010101, %01010101, %01010101 ;  4-7
+  .db %01010101, %01010101, %01010101, %01010101, %01010101, %01010101, %01010101, %01010101 ;  8-11
+  .db %01010101, %01010101, %01010101, %01010101, %01010101, %01010101, %01010101, %01010101 ; 12-15
+  .db %01010101, %01010101, %01010101, %01010101, %01010101, %01010101, %01010101, %01010101 ; 16-19
+  .db %01010101, %01010101, %01010101, %01010101, %01010101, %01010101, %01010101, %01010101 ; 20-23
+  .db %01010101, %01010101, %01010101, %01010101, %01010101, %01010101, %01010101, %01010101 ; 24-27
+  .db %00000000, %00000000, %00000000, %00000000, %00000000, %00000000, %00000000, %00000000 ; 28-31
+;      BRBLTRTL   BRBLTRTL   BRBLTRTL   BRBLTRTL   BRBLTRTL   BRBLTRTL   BRBLTRTL   BRBLTRTL
 
 sprites:
      ;vert tile attr horiz
