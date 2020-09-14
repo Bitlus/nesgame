@@ -14,6 +14,15 @@ playerAnimationCounter .rs 1
 playerFrame .rs 1
 bg_ptr_lo .rs 1 ; bg pointer low byte
 bg_ptr_hi .rs 1 ; bg pointer high byte
+
+bg_money_offset .rs 1 ; offset to money
+money_thousands .rs 1 ; money counter for thousands
+money_hundreds  .rs 1 ; money counter for hundreds
+money_tens      .rs 1 ; money counter for tens
+;money_ones      .rs 1 ; money counter for ones
+
+cam_x .rs 1 ; x camera PPUSCROLL
+cam_y .rs 1 ; y camera PPUSCROLL
     
   .bank 0
   .org $C000 
@@ -124,27 +133,129 @@ LoadAttributeLoop:
   LDA #%00011110   ; enable sprites, enable background, no clipping on left side
   STA $2001
 
+  LDA #$00         ; set PPUSCROLL x and y coords
+  STA $2005        ; x
+  STA $2005        ; y
+
 InitVariables:
   LDA #$00
   STA animationCounter
   STA weedFrame
   STA playerAnimationCounter
   STA playerFrame
-  LDA #$00         ; set PPUSCROLL x and y coords
-  STA $2005        ; x
-  STA $2005        ; y
+  STA cam_x
+  STA cam_y
+  STA money_thousands
+  STA money_hundreds
+  STA money_tens
+  ;STA money_ones
+  LDA #$88          ; 132 tiles from bg offset
+  STA bg_money_offset
 
 Forever:
   JMP Forever     ;jump back to Forever, infinite loop
   
- 
+Subroutines:
 
+IncrementMoney:
+  CLC
+
+  ; ones
+;  LDA money_ones
+;  ADC #$01
+;  CMP #$0A                      ; if acc > 9, set to 0 and set the carry flag
+;  BNE IM_ones_done
+;  LDA #$00
+;  SEC
+;IM_ones_done:
+;  STA money_ones
+
+  ; tens
+  LDA money_tens
+;  BCC IM_tens_done
+;  CLC
+  ADC #$01
+  CMP #$0A                      ; if acc > 9, set to 0 and set the carry flag
+  BNE IM_tens_done
+  LDA #$00
+  SEC
+IM_tens_done:
+  STA money_tens                ; store acc in tens variable
+
+  ; hundreds
+  LDA money_hundreds
+  BCC IM_hundreds_done          ; if carry flag is not clear, increment acc and clear the carry flag
+  CLC
+  ADC #$01
+  CMP #$0A                      ; if acc > 9, set to 0 and set the carry flag
+  BNE IM_hundreds_done
+  LDA #$00
+  SEC
+IM_hundreds_done:
+  STA money_hundreds
+
+  ; thousands
+  LDA money_thousands
+  BCC IM_thousands_done         ; if carry flag is not clear, increment acc and clear the carry flag
+  CLC
+  ADC #$01
+  CMP #$0A                      ; if acc > 9, set to 0 and write to tens and hundreds slots
+  BNE IM_thousands_done
+  LDA #$09
+;  STA money_ones
+  STA money_tens
+  STA money_hundreds
+IM_thousands_done:
+  STA money_thousands           ; store acc in thousands slot
+  RTS
+
+
+; draws money values into VRAM tile memory
+DrawMoney:
+  ; set initial address to $20xx
+  LDX #$20
+  LDY bg_money_offset
+
+  STX $2006
+  STY $2006
+  LDA money_thousands
+  STA $2007
+
+  INY
+  STX $2006
+  STY $2006
+  LDA money_hundreds
+  STA $2007
+  
+  INY
+  STX $2006
+  STY $2006
+  LDA money_tens
+  STA $2007
+
+;  INY
+;  STX $2006
+;  STY $2006
+;  LDA money_ones
+;  STA $2007
+
+  RTS
+
+; loads cam values and writes PPUSCROLL with them
+CameraScroll:
+  LDX cam_x
+  LDY cam_y
+  STX $2005
+  STY $2005
+  RTS
+
+SubroutinesDone:
+ 
 NMI:
   LDA #$00
   STA $2003       ; set the low byte (00) of the RAM address
   LDA #$02
   STA $4014       ; set the high byte (02) of the RAM address, start the transfer
-
 
   ; Set is walking flag
   LDA #$00
@@ -316,10 +427,9 @@ IdleSprite:
 
 IdleSpriteDone:
 
-AnimationFile:
-  JMP ReturnFromInterrupt
-  .include "animation.asm"
-
+  JSR IncrementMoney     ; increment money counter
+  JSR DrawMoney          ; draw money to screen
+  JSR CameraScroll       ; set camera scroll
 
 ReturnFromInterrupt:
   RTI             ; return from interrupt
