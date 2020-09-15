@@ -218,24 +218,16 @@ DrawMoney:
 
   STX $2006
   STY $2006
+
   LDA money_thousands
   STA $2007
 
-  INY
-  STX $2006
-  STY $2006
   LDA money_hundreds
   STA $2007
   
-  INY
-  STX $2006
-  STY $2006
   LDA money_tens
   STA $2007
 
-;  INY
-;  STX $2006
-;  STY $2006
 ;  LDA money_ones
 ;  STA $2007
 
