@@ -19,7 +19,7 @@ bg_money_offset .rs 1 ; offset to money
 money_thousands .rs 1 ; money counter for thousands
 money_hundreds  .rs 1 ; money counter for hundreds
 money_tens      .rs 1 ; money counter for tens
-;money_ones      .rs 1 ; money counter for ones
+money_ones      .rs 1 ; money counter for ones
 
 cam_x .rs 1 ; x camera PPUSCROLL
 cam_y .rs 1 ; y camera PPUSCROLL
@@ -148,7 +148,7 @@ InitVariables:
   STA money_thousands
   STA money_hundreds
   STA money_tens
-  ;STA money_ones
+  STA money_ones
   LDA #$88          ; 132 tiles from bg offset
   STA bg_money_offset
 
@@ -202,7 +202,7 @@ IM_hundreds_done:
   CMP #$0A                      ; if acc > 9, set to 0 and write to tens and hundreds slots
   BNE IM_thousands_done
   LDA #$09
-;  STA money_ones
+  STA money_ones
   STA money_tens
   STA money_hundreds
 IM_thousands_done:
@@ -228,8 +228,8 @@ DrawMoney:
   LDA money_tens
   STA $2007
 
-;  LDA money_ones
-;  STA $2007
+  LDA money_ones
+  STA $2007
 
   RTS
 
