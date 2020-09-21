@@ -9,7 +9,6 @@
   .rsset $0000
 isWalking .rs 1
 animationCounter .rs 1
-weedFrame .rs 1
 playerAnimationCounter .rs 1
 playerFrame .rs 1
 bg_ptr_lo .rs 1 ; bg pointer low byte
@@ -140,7 +139,6 @@ LoadAttributeLoop:
 InitVariables:
   LDA #$00
   STA animationCounter
-  STA weedFrame
   STA playerAnimationCounter
   STA playerFrame
   STA cam_x
@@ -241,18 +239,7 @@ CameraScroll:
   STY $2005
   RTS
 
-SubroutinesDone:
- 
-NMI:
-  LDA #$00
-  STA $2003       ; set the low byte (00) of the RAM address
-  LDA #$02
-  STA $4014       ; set the high byte (02) of the RAM address, start the transfer
-
-  ; Set is walking flag
-  LDA #$00
-  STA isWalking
-
+HandleController:
 LatchController:
   LDA #$01
   STA $4016
@@ -418,7 +405,21 @@ IdleSprite:
   STA $020D
 
 IdleSpriteDone:
+  RTS 
 
+SubroutinesDone:
+ 
+NMI:
+  LDA #$00
+  STA $2003       ; set the low byte (00) of the RAM address
+  LDA #$02
+  STA $4014       ; set the high byte (02) of the RAM address, start the transfer
+
+  ; Set is walking flag
+  LDA #$00
+  STA isWalking
+
+  JSR HandleController   ; do the controller thing
   JSR IncrementMoney     ; increment money counter
   JSR DrawMoney          ; draw money to screen
   JSR CameraScroll       ; set camera scroll
@@ -514,9 +515,6 @@ cactus:
   .db $10, $07, $00, $18   ;sprite 1
   .db $18, $08, $00, $10   ;sprite 2
   .db $18, $09, $00, $18   ;sprite 3
-
-tumbleWeedFrame1:
-  .db $06, $07, $08, $09
 
   .org $FFFA     ;first of the three vectors starts here
   .dw NMI        ;when an NMI happens (once per frame if enabled) the 
