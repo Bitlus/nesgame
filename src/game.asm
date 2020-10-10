@@ -330,6 +330,11 @@ ReadDown:
   JMP DownAnimation
 
 InitDownLoop:
+  ; Temp code to box player in prototype room
+  LDA $0200
+  CMP #$AF ; 175 in decimal
+  BCS ReadDownDone
+
   LDX #$00
 MoveDownLoop:
   LDA $0200, X
