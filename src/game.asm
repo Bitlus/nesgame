@@ -23,6 +23,17 @@ money_ones      .rs 1 ; money counter for ones
 cam_x .rs 1 ; x camera PPUSCROLL
 cam_y .rs 1 ; y camera PPUSCROLL
     
+;
+; BULLET_VELOCITY = #$1 ; bullet velocity global constant
+; each bullet is 3 bytes
+;
+; bullet          .rs 3*(amount of bullets)
+;
+; b0.dir = bullet + 0 offset is enum direction, 0|1|2|3|4, 0 = dead, rest are directions
+; b0.x   = bullet + 1 offset is x coord
+; b0.y   = bullet + 2 offset is y coord
+;
+
   .bank 0
   .org $C000 
 RESET:
