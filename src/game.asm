@@ -297,6 +297,11 @@ ReadUp:
   JMP UpAnimation
 
 InitUpLoop:
+  ; Temp code to box player in prototype room
+  LDA $0200
+  CMP #$57 ; 87 in decimal
+  BCC ReadUpDone
+
   ; Update player sprites Y positions
   LDX #$00
 MoveUpLoop:
@@ -325,6 +330,11 @@ ReadDown:
   JMP DownAnimation
 
 InitDownLoop:
+  ; Temp code to box player in prototype room
+  LDA $0200
+  CMP #$AF ; 175 in decimal
+  BCS ReadDownDone
+
   LDX #$00
 MoveDownLoop:
   LDA $0200, X
@@ -352,6 +362,11 @@ ReadLeft:
   JMP LeftAnimation
   
 InitLeftLoop:
+  ; Temp code to box player in prototype room
+  LDA $0203
+  CMP #$1C ; 28 in decimal
+  BCC ReadLeftDone
+
   LDX #$00
 MoveLeftLoop:
   LDA $0203, X
@@ -379,6 +394,11 @@ ReadRight:
   JMP RightAnimation
 
 InitRightLoop:
+  ; Temp code to box player in prototype room
+  LDA $0203
+  CMP #$D6 ; 175 in decimal
+  BCS ReadRightDone
+
   LDX #$00
 MoveRightLoop:
   LDA $0203, X
