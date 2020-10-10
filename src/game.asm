@@ -297,6 +297,11 @@ ReadUp:
   JMP UpAnimation
 
 InitUpLoop:
+  ; Temp code to box player in prototype room
+  LDA $0200
+  CMP #$57 ; 87 in decimal
+  BCC ReadUpDone
+
   ; Update player sprites Y positions
   LDX #$00
 MoveUpLoop:
