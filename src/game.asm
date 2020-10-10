@@ -362,6 +362,11 @@ ReadLeft:
   JMP LeftAnimation
   
 InitLeftLoop:
+  ; Temp code to box player in prototype room
+  LDA $0203
+  CMP #$1C ; 28 in decimal
+  BCC ReadLeftDone
+
   LDX #$00
 MoveLeftLoop:
   LDA $0203, X
@@ -389,6 +394,11 @@ ReadRight:
   JMP RightAnimation
 
 InitRightLoop:
+  ; Temp code to box player in prototype room
+  LDA $0203
+  CMP #$D6 ; 175 in decimal
+  BCS ReadRightDone
+
   LDX #$00
 MoveRightLoop:
   LDA $0203, X
