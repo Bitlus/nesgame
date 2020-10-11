@@ -22,7 +22,15 @@ money_ones      .rs 1 ; money counter for ones
 
 cam_x .rs 1 ; x camera PPUSCROLL
 cam_y .rs 1 ; y camera PPUSCROLL
+
+player_dir      .rs 1 ; player direction
     
+DEAD  = $0
+UP    = $1
+RIGHT = $2
+DOWN  = $3
+LEFT  = $4
+
 ;
 ; BULLET_VELOCITY = #$1 ; bullet velocity global constant
 ; each bullet is 3 bytes
@@ -160,6 +168,8 @@ InitVariables:
   STA money_ones
   LDA #$88          ; 132 tiles from bg offset
   STA bg_money_offset
+  LDA #RIGHT
+  STA player_dir
 
 Forever:
   JMP Forever     ;jump back to Forever, infinite loop
@@ -263,6 +273,7 @@ ReadA:
   AND #%00000001  ; only look at bit 0
   BEQ ReadADone   ; branch to ReadADone if button is NOT pressed (0)
                   ; add instructions here to do something when button IS pressed (1)
+  ; shoot
 ReadADone:        ; handling this button is done
   
 
@@ -292,6 +303,8 @@ ReadUp:
   ; Set isWalking flag
   LDA #$01
   STA isWalking
+  LDA #UP
+  STA player_dir
 
   ; Set correct sprite tiles
   JMP UpAnimation
@@ -326,6 +339,8 @@ ReadDown:
   ; Set isWalking flag
   LDA #$01
   STA isWalking
+  LDA #DOWN
+  STA player_dir
 
   JMP DownAnimation
 
@@ -358,6 +373,8 @@ ReadLeft:
   ; Set isWalking flag
   LDA #$01
   STA isWalking
+  LDA #LEFT
+  STA player_dir
 
   JMP LeftAnimation
   
@@ -390,6 +407,8 @@ ReadRight:
   ; Set isWalking flag
   LDA #$01
   STA isWalking
+  LDA #RIGHT
+  STA player_dir
   
   JMP RightAnimation
 
