@@ -277,7 +277,22 @@ CameraScroll:
 
 ; Moves bullet in the correct direction if it is not dead.
 HandleBullet:
+  LDA bullet_y
+  CMP #ROOM_UP
+  BCC set_bullet_dead
+  CMP #ROOM_DOWN
+  BCS set_bullet_dead
+  LDA bullet_x
+  CMP #ROOM_LEFT
+  BCC set_bullet_dead
+  CMP #ROOM_RIGHT
+  BCS set_bullet_dead
+  JMP chk_dead
+set_bullet_dead:  
+  LDA #DEAD
+  STA bullet_dir
   ; if the bullet is dead, set x and y to 0 and end the subroutine
+chk_dead:
   LDA bullet_dir
   CMP #DEAD
   BNE chk_dir
