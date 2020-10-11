@@ -109,7 +109,7 @@ LoadSpritesLoop:
   LDA sprites, x        ; load data from address (sprites +  x)
   STA $0200, x          ; store into RAM address ($0200 + x)
   INX                   ; X = X + 1
-  CPX #$20              ; Compare X to hex $20, decimal 32
+  CPX #$10              ; Compare X to hex $20, decimal 32 to load 1 sprite
   BNE LoadSpritesLoop   ; Branch to LoadSpritesLoop if compare was Not Equal to zero
                         ; if compare was equal to 32, keep going down
 
@@ -571,12 +571,6 @@ sprites:
   .db $80, $03, $00, $88   ;sprite 1
   .db $88, $12, $00, $80   ;sprite 2
   .db $88, $13, $00, $88   ;sprite 3
-
-cactus:
-  .db $10, $06, $00, $10   ;sprite 0
-  .db $10, $07, $00, $18   ;sprite 1
-  .db $18, $08, $00, $10   ;sprite 2
-  .db $18, $09, $00, $18   ;sprite 3
 
   .org $FFFA     ;first of the three vectors starts here
   .dw NMI        ;when an NMI happens (once per frame if enabled) the 
