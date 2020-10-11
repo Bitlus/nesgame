@@ -24,12 +24,15 @@ cam_x .rs 1 ; x camera PPUSCROLL
 cam_y .rs 1 ; y camera PPUSCROLL
 
 player_dir      .rs 1 ; player direction
+player_x        .rs 1 ; player x
+player_y        .rs 1 ; player y
 
 bullet_dir      .rs 1 ; bullet direction
 bullet_x        .rs 1 ; bullet x coord
 bullet_y        .rs 1 ; bullet y coord
 
-BULLET_VEL = $1
+BULLET_VEL = $3
+BULLET_OFFSET = $10
 
 ; BULLET_VELOCITY = #$1 ; bullet velocity global constant
 ; each bullet is 3 bytes
@@ -109,7 +112,7 @@ LoadSpritesLoop:
   LDA sprites, x        ; load data from address (sprites +  x)
   STA $0200, x          ; store into RAM address ($0200 + x)
   INX                   ; X = X + 1
-  CPX #$10              ; Compare X to hex $20, decimal 32 to load 1 sprite
+  CPX #$14              ; Compare X to hex $20, decimal 32 to load 5 sprites
   BNE LoadSpritesLoop   ; Branch to LoadSpritesLoop if compare was Not Equal to zero
                         ; if compare was equal to 32, keep going down
 
@@ -272,6 +275,54 @@ CameraScroll:
   STY $2005
   RTS
 
+; Moves bullet in the correct direction if it is not dead.
+HandleBullet:
+  ; if the bullet is dead, set x and y to 0 and end the subroutine
+  LDA bullet_dir
+  CMP #DEAD
+  BNE chk_dir
+  LDA #$00
+  STA bullet_x
+  STA bullet_y
+  JMP HandleBulletDone
+chk_dir:
+  ; if the bullet is not dead, increment its x or y coords based on the bullet's direction
+  CMP #UP
+  BNE HandleBullet_chk_r
+  LDA bullet_y
+  SEC
+  SBC #BULLET_VEL
+  STA bullet_y
+  JMP HandleBulletDone
+HandleBullet_chk_r:
+  CMP #RIGHT
+  BNE HandleBullet_chk_d
+  LDA bullet_x
+  CLC
+  ADC #BULLET_VEL
+  STA bullet_x
+  JMP HandleBulletDone
+HandleBullet_chk_d:
+  CMP #DOWN
+  BNE HandleBullet_chk_l
+  LDA bullet_y
+  CLC
+  ADC #BULLET_VEL
+  STA bullet_y
+  JMP HandleBulletDone
+HandleBullet_chk_l:
+  LDA bullet_x
+  SEC
+  SBC #BULLET_VEL
+  STA bullet_x
+HandleBulletDone:
+  ; store bullet x, y in sprite memory addresses
+  LDA bullet_y
+  STA $0210
+  LDA bullet_x
+  STA $0213
+  RTS
+
 HandleController:
 LatchController:
   LDA #$01
@@ -285,7 +336,17 @@ ReadA:
   AND #%00000001  ; only look at bit 0
   BEQ ReadADone   ; branch to ReadADone if button is NOT pressed (0)
                   ; add instructions here to do something when button IS pressed (1)
-  ; shoot
+  LDA bullet_dir
+  ;CMP #DEAD
+  ;BNE ReadADone
+  ; set bullet enum
+  LDA player_dir
+  STA bullet_dir
+  ; set bullet x, y coords
+  LDA player_x
+  STA bullet_x
+  LDA player_y
+  STA bullet_y
 ReadADone:        ; handling this button is done
   
 
@@ -481,7 +542,13 @@ NMI:
   LDA #$00
   STA isWalking
 
+  LDA $0200
+  STA player_y
+  LDA $0203
+  STA player_x
+
   JSR HandleController   ; do the controller thing
+  JSR HandleBullet       ; handle player bullet
   JSR IncrementMoney     ; increment money counter
   JSR DrawMoney          ; draw money to screen
   JSR CameraScroll       ; set camera scroll
@@ -571,6 +638,11 @@ sprites:
   .db $80, $03, $00, $88   ;sprite 1
   .db $88, $12, $00, $80   ;sprite 2
   .db $88, $13, $00, $88   ;sprite 3
+
+bullet:
+  .db $88, $08, $00, $88   ;sprite 3
+
+endsprites:
 
   .org $FFFA     ;first of the three vectors starts here
   .dw NMI        ;when an NMI happens (once per frame if enabled) the 
