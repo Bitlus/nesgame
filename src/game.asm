@@ -24,14 +24,16 @@ cam_x .rs 1 ; x camera PPUSCROLL
 cam_y .rs 1 ; y camera PPUSCROLL
 
 player_dir      .rs 1 ; player direction
-    
-DEAD  = $0
-UP    = $1
-RIGHT = $2
-DOWN  = $3
-LEFT  = $4
+player_x        .rs 1 ; player x
+player_y        .rs 1 ; player y
 
-;
+bullet_dir      .rs 1 ; bullet direction
+bullet_x        .rs 1 ; bullet x coord
+bullet_y        .rs 1 ; bullet y coord
+
+BULLET_VEL = $3
+BULLET_OFFSET = $10
+
 ; BULLET_VELOCITY = #$1 ; bullet velocity global constant
 ; each bullet is 3 bytes
 ;
@@ -40,7 +42,17 @@ LEFT  = $4
 ; b0.dir = bullet + 0 offset is enum direction, 0|1|2|3|4, 0 = dead, rest are directions
 ; b0.x   = bullet + 1 offset is x coord
 ; b0.y   = bullet + 2 offset is y coord
-;
+
+DEAD  = $0
+UP    = $1
+RIGHT = $2
+DOWN  = $3
+LEFT  = $4
+
+ROOM_UP    = $57
+ROOM_RIGHT = $D6
+ROOM_DOWN  = $AF
+ROOM_LEFT  = $1C
 
   .bank 0
   .org $C000 
@@ -100,7 +112,7 @@ LoadSpritesLoop:
   LDA sprites, x        ; load data from address (sprites +  x)
   STA $0200, x          ; store into RAM address ($0200 + x)
   INX                   ; X = X + 1
-  CPX #$20              ; Compare X to hex $20, decimal 32
+  CPX #$14              ; Compare X to hex $20, decimal 32 to load 5 sprites
   BNE LoadSpritesLoop   ; Branch to LoadSpritesLoop if compare was Not Equal to zero
                         ; if compare was equal to 32, keep going down
 
@@ -166,6 +178,9 @@ InitVariables:
   STA money_hundreds
   STA money_tens
   STA money_ones
+  STA bullet_dir
+  STA bullet_x
+  STA bullet_y
   LDA #$88          ; 132 tiles from bg offset
   STA bg_money_offset
   LDA #RIGHT
@@ -260,6 +275,69 @@ CameraScroll:
   STY $2005
   RTS
 
+; Moves bullet in the correct direction if it is not dead.
+HandleBullet:
+  LDA bullet_y
+  CMP #ROOM_UP
+  BCC set_bullet_dead
+  CMP #ROOM_DOWN
+  BCS set_bullet_dead
+  LDA bullet_x
+  CMP #ROOM_LEFT
+  BCC set_bullet_dead
+  CMP #ROOM_RIGHT
+  BCS set_bullet_dead
+  JMP chk_dead
+set_bullet_dead:  
+  LDA #DEAD
+  STA bullet_dir
+  ; if the bullet is dead, set x and y to 0 and end the subroutine
+chk_dead:
+  LDA bullet_dir
+  CMP #DEAD
+  BNE chk_dir
+  LDA #$00
+  STA bullet_x
+  STA bullet_y
+  JMP HandleBulletDone
+chk_dir:
+  ; if the bullet is not dead, increment its x or y coords based on the bullet's direction
+  CMP #UP
+  BNE HandleBullet_chk_r
+  LDA bullet_y
+  SEC
+  SBC #BULLET_VEL
+  STA bullet_y
+  JMP HandleBulletDone
+HandleBullet_chk_r:
+  CMP #RIGHT
+  BNE HandleBullet_chk_d
+  LDA bullet_x
+  CLC
+  ADC #BULLET_VEL
+  STA bullet_x
+  JMP HandleBulletDone
+HandleBullet_chk_d:
+  CMP #DOWN
+  BNE HandleBullet_chk_l
+  LDA bullet_y
+  CLC
+  ADC #BULLET_VEL
+  STA bullet_y
+  JMP HandleBulletDone
+HandleBullet_chk_l:
+  LDA bullet_x
+  SEC
+  SBC #BULLET_VEL
+  STA bullet_x
+HandleBulletDone:
+  ; store bullet x, y in sprite memory addresses
+  LDA bullet_y
+  STA $0210
+  LDA bullet_x
+  STA $0213
+  RTS
+
 HandleController:
 LatchController:
   LDA #$01
@@ -273,7 +351,17 @@ ReadA:
   AND #%00000001  ; only look at bit 0
   BEQ ReadADone   ; branch to ReadADone if button is NOT pressed (0)
                   ; add instructions here to do something when button IS pressed (1)
-  ; shoot
+  LDA bullet_dir
+  ;CMP #DEAD
+  ;BNE ReadADone
+  ; set bullet enum
+  LDA player_dir
+  STA bullet_dir
+  ; set bullet x, y coords
+  LDA player_x
+  STA bullet_x
+  LDA player_y
+  STA bullet_y
 ReadADone:        ; handling this button is done
   
 
@@ -469,7 +557,13 @@ NMI:
   LDA #$00
   STA isWalking
 
+  LDA $0200
+  STA player_y
+  LDA $0203
+  STA player_x
+
   JSR HandleController   ; do the controller thing
+  JSR HandleBullet       ; handle player bullet
   JSR IncrementMoney     ; increment money counter
   JSR DrawMoney          ; draw money to screen
   JSR CameraScroll       ; set camera scroll
@@ -560,11 +654,10 @@ sprites:
   .db $88, $12, $00, $80   ;sprite 2
   .db $88, $13, $00, $88   ;sprite 3
 
-cactus:
-  .db $10, $06, $00, $10   ;sprite 0
-  .db $10, $07, $00, $18   ;sprite 1
-  .db $18, $08, $00, $10   ;sprite 2
-  .db $18, $09, $00, $18   ;sprite 3
+bullet:
+  .db $88, $08, $00, $88   ;sprite 3
+
+endsprites:
 
   .org $FFFA     ;first of the three vectors starts here
   .dw NMI        ;when an NMI happens (once per frame if enabled) the 
