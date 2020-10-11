@@ -352,8 +352,8 @@ ReadA:
   BEQ ReadADone   ; branch to ReadADone if button is NOT pressed (0)
                   ; add instructions here to do something when button IS pressed (1)
   LDA bullet_dir
-  ;CMP #DEAD
-  ;BNE ReadADone
+  CMP #DEAD
+  BNE ReadADone
   ; set bullet enum
   LDA player_dir
   STA bullet_dir
