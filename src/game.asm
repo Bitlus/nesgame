@@ -24,14 +24,13 @@ cam_x .rs 1 ; x camera PPUSCROLL
 cam_y .rs 1 ; y camera PPUSCROLL
 
 player_dir      .rs 1 ; player direction
-    
-DEAD  = $0
-UP    = $1
-RIGHT = $2
-DOWN  = $3
-LEFT  = $4
 
-;
+bullet_dir      .rs 1 ; bullet direction
+bullet_x        .rs 1 ; bullet x coord
+bullet_y        .rs 1 ; bullet y coord
+
+BULLET_VEL = $1
+
 ; BULLET_VELOCITY = #$1 ; bullet velocity global constant
 ; each bullet is 3 bytes
 ;
@@ -40,7 +39,17 @@ LEFT  = $4
 ; b0.dir = bullet + 0 offset is enum direction, 0|1|2|3|4, 0 = dead, rest are directions
 ; b0.x   = bullet + 1 offset is x coord
 ; b0.y   = bullet + 2 offset is y coord
-;
+
+DEAD  = $0
+UP    = $1
+RIGHT = $2
+DOWN  = $3
+LEFT  = $4
+
+ROOM_UP    = $57
+ROOM_RIGHT = $D6
+ROOM_DOWN  = $AF
+ROOM_LEFT  = $1C
 
   .bank 0
   .org $C000 
@@ -166,6 +175,9 @@ InitVariables:
   STA money_hundreds
   STA money_tens
   STA money_ones
+  STA bullet_dir
+  STA bullet_x
+  STA bullet_y
   LDA #$88          ; 132 tiles from bg offset
   STA bg_money_offset
   LDA #RIGHT
