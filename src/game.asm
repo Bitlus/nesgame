@@ -424,6 +424,11 @@ ReadDown:
   AND #%00000001     ; only look at bit 0
   BEQ ReadDownDone   ; branch to ReadBDone if button is NOT pressed (0)
 
+  ; if walking skip
+  LDA isWalking
+  CMP #$01
+  BEQ ReadDownDone
+
   ; Set isWalking flag
   LDA #$01
   STA isWalking
@@ -458,6 +463,11 @@ ReadLeft:
   AND #%00000001     ; only look at bit 0
   BEQ ReadLeftDone   ; branch to ReadBDone if button is NOT pressed (0)
 
+  ; if walking skip
+  LDA isWalking
+  CMP #$01
+  BEQ ReadLeftDone
+
   ; Set isWalking flag
   LDA #$01
   STA isWalking
@@ -491,6 +501,11 @@ ReadRight:
   LDA $4016
   AND #%00000001      ; only look at bit 0
   BEQ ReadRightDone   ; branch to ReadBDone if button is NOT pressed (0)
+
+  ; if walking skip
+  LDA isWalking
+  CMP #$01
+  BEQ ReadRightDone
 
   ; Set isWalking flag
   LDA #$01
