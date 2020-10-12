@@ -359,8 +359,12 @@ ReadA:
   STA bullet_dir
   ; set bullet x, y coords
   LDA player_x
+  CLC
+  ADC #$06
   STA bullet_x
   LDA player_y
+  CLC
+  ADC #$06
   STA bullet_y
 ReadADone:        ; handling this button is done
   
