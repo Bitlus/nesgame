@@ -23,26 +23,35 @@ money_ones      .rs 1 ; money counter for ones
 cam_x .rs 1 ; x camera PPUSCROLL
 cam_y .rs 1 ; y camera PPUSCROLL
 
-player_dir      .rs 1 ; player direction
-player_x        .rs 1 ; player x
-player_y        .rs 1 ; player y
+; Players
+player_1_dir      .rs 1 ; player 1 direction
+player_1_x        .rs 1 ; player 1 x
+player_1_y        .rs 1 ; player 1 y
+player_1_a_frame  .rs 1 ; player 1 animation frame
+player_1_health   .rs 1 ; player 1 health
+player_1_score    .rs 1 ; player 1 score
 
-bullet_dir      .rs 1 ; bullet direction
-bullet_x        .rs 1 ; bullet x coord
-bullet_y        .rs 1 ; bullet y coord
+player_2_dir      .rs 1 ; player 2 direction
+player_2_x        .rs 1 ; player 2 x
+player_2_y        .rs 1 ; player 2 y
+player_2_a_frame  .rs 1 ; player 2 animation frame
+player_2_health   .rs 1 ; player 2 health
+player_2_score    .rs 1 ; player 2 score
 
-BULLET_VEL = $3
+; Bullets
+bullet_1_dir      .rs 1 ; bullet 1 direction
+bullet_1_x        .rs 1 ; bullet 1 x coord
+bullet_1_y        .rs 1 ; bullet 1 y coord
+
+bullet_2_dir      .rs 1 ; bullet 2 direction
+bullet_2_x        .rs 1 ; bullet 2 x coord
+bullet_2_y        .rs 1 ; bullet 2 y coord
+
+; Bullet constants
+BULLET_VEL = $05
 BULLET_OFFSET = $10
 
-; BULLET_VELOCITY = #$1 ; bullet velocity global constant
-; each bullet is 3 bytes
-;
-; bullet          .rs 3*(amount of bullets)
-;
-; b0.dir = bullet + 0 offset is enum direction, 0|1|2|3|4, 0 = dead, rest are directions
-; b0.x   = bullet + 1 offset is x coord
-; b0.y   = bullet + 2 offset is y coord
-
+; Direction Enum
 DEAD  = $0
 UP    = $1
 RIGHT = $2
@@ -178,13 +187,13 @@ InitVariables:
   STA money_hundreds
   STA money_tens
   STA money_ones
-  STA bullet_dir
-  STA bullet_x
-  STA bullet_y
+  STA bullet_1_dir
+  STA bullet_1_x
+  STA bullet_1_y
   LDA #$88          ; 132 tiles from bg offset
   STA bg_money_offset
   LDA #RIGHT
-  STA player_dir
+  STA player_1_dir
 
 Forever:
   JMP Forever     ;jump back to Forever, infinite loop
@@ -277,12 +286,12 @@ CameraScroll:
 
 ; Moves bullet in the correct direction if it is not dead.
 HandleBullet:
-  LDA bullet_y
+  LDA bullet_1_y
   CMP #ROOM_UP
   BCC set_bullet_dead
   CMP #ROOM_DOWN
   BCS set_bullet_dead
-  LDA bullet_x
+  LDA bullet_1_x
   CMP #ROOM_LEFT
   BCC set_bullet_dead
   CMP #ROOM_RIGHT
@@ -290,51 +299,51 @@ HandleBullet:
   JMP chk_dead
 set_bullet_dead:  
   LDA #DEAD
-  STA bullet_dir
+  STA bullet_1_dir
   ; if the bullet is dead, set x and y to 0 and end the subroutine
 chk_dead:
-  LDA bullet_dir
+  LDA bullet_1_dir
   CMP #DEAD
   BNE chk_dir
   LDA #$00
-  STA bullet_x
-  STA bullet_y
+  STA bullet_1_x
+  STA bullet_1_y
   JMP HandleBulletDone
 chk_dir:
   ; if the bullet is not dead, increment its x or y coords based on the bullet's direction
   CMP #UP
   BNE HandleBullet_chk_r
-  LDA bullet_y
+  LDA bullet_1_y
   SEC
   SBC #BULLET_VEL
-  STA bullet_y
+  STA bullet_1_y
   JMP HandleBulletDone
 HandleBullet_chk_r:
   CMP #RIGHT
   BNE HandleBullet_chk_d
-  LDA bullet_x
+  LDA bullet_1_x
   CLC
   ADC #BULLET_VEL
-  STA bullet_x
+  STA bullet_1_x
   JMP HandleBulletDone
 HandleBullet_chk_d:
   CMP #DOWN
   BNE HandleBullet_chk_l
-  LDA bullet_y
+  LDA bullet_1_y
   CLC
   ADC #BULLET_VEL
-  STA bullet_y
+  STA bullet_1_y
   JMP HandleBulletDone
 HandleBullet_chk_l:
-  LDA bullet_x
+  LDA bullet_1_x
   SEC
   SBC #BULLET_VEL
-  STA bullet_x
+  STA bullet_1_x
 HandleBulletDone:
   ; store bullet x, y in sprite memory addresses
-  LDA bullet_y
+  LDA bullet_1_y
   STA $0210
-  LDA bullet_x
+  LDA bullet_1_x
   STA $0213
   RTS
 
@@ -351,21 +360,21 @@ ReadA:
   AND #%00000001  ; only look at bit 0
   BEQ ReadADone   ; branch to ReadADone if button is NOT pressed (0)
                   ; add instructions here to do something when button IS pressed (1)
-  LDA bullet_dir
+  LDA bullet_1_dir
   CMP #DEAD
   BNE ReadADone
   ; set bullet enum
-  LDA player_dir
-  STA bullet_dir
+  LDA player_1_dir
+  STA bullet_1_dir
   ; set bullet x, y coords
-  LDA player_x
+  LDA player_1_x
   CLC
   ADC #$06
-  STA bullet_x
-  LDA player_y
+  STA bullet_1_x
+  LDA player_1_y
   CLC
   ADC #$06
-  STA bullet_y
+  STA bullet_1_y
 ReadADone:        ; handling this button is done
   
 
@@ -396,7 +405,7 @@ ReadUp:
   LDA #$01
   STA isWalking
   LDA #UP
-  STA player_dir
+  STA player_1_dir
 
   ; Set correct sprite tiles
   JMP UpAnimation
@@ -437,7 +446,7 @@ ReadDown:
   LDA #$01
   STA isWalking
   LDA #DOWN
-  STA player_dir
+  STA player_1_dir
 
   JMP DownAnimation
 
@@ -476,7 +485,7 @@ ReadLeft:
   LDA #$01
   STA isWalking
   LDA #LEFT
-  STA player_dir
+  STA player_1_dir
 
   JMP LeftAnimation
   
@@ -515,7 +524,7 @@ ReadRight:
   LDA #$01
   STA isWalking
   LDA #RIGHT
-  STA player_dir
+  STA player_1_dir
   
   JMP RightAnimation
 
@@ -577,14 +586,14 @@ NMI:
   STA isWalking
 
   LDA $0200
-  STA player_y
+  STA player_1_y
   LDA $0203
-  STA player_x
+  STA player_1_x
 
   JSR HandleController   ; do the controller thing
   JSR HandleBullet       ; handle player bullet
-  JSR IncrementMoney     ; increment money counter
-  JSR DrawMoney          ; draw money to screen
+  ;JSR IncrementMoney     ; increment money counter
+  ;JSR DrawMoney          ; draw money to screen
   JSR CameraScroll       ; set camera scroll
 
 ReturnFromInterrupt:
@@ -615,37 +624,37 @@ background:
 
   .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ;  0 not seen
   .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ;  1
-  .db $FF,$1C,$0A,$15, $18,$18,$17,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $12,$1D,$0E,$16, $FF,$FF,$FF,$FF  ;  2
-  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $4A,$4B,$4C,$4D, $FF,$FF,$FF,$FF  ;  3
+  .db $FF,$19,$01,$57, $57,$57,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$00,$FF, $FF,$00,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$57,$57, $57,$19,$02,$FF  ;  2
+  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ;  3
 
-  .db $FF,$16,$18,$17, $0E,$22,$FF,$24, $00,$00,$00,$00, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $4E,$FF,$FF,$4F, $FF,$FF,$FF,$FF  ;  4
-  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $50,$FF,$FF,$51, $FF,$FF,$FF,$FF  ;  5
-  .db $FF,$15,$12,$0F, $0E,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $52,$53,$54,$55, $FF,$FF,$FF,$FF  ;  6
+  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ;  4
+  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ;  5
+  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ;  6
   .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ;  7
                                                                                                                                  
   .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ;  8
-  .db $FF,$25,$26,$26, $26,$26,$26,$26, $26,$26,$26,$26, $26,$2D,$3D,$2D, $3D,$2D,$3D,$26, $26,$26,$26,$26, $26,$26,$26,$26, $26,$26,$25,$FF  ;  9
-  .db $FF,$27,$28,$59, $2F,$35,$2F,$35, $2F,$35,$2F,$35, $2F,$35,$2F,$57, $57,$41,$36,$41, $36,$41,$36,$41, $36,$41,$36,$41, $58,$38,$27,$FF  ; 10
-  .db $FF,$27,$57,$28, $2A,$2B,$2A,$2B, $2A,$2B,$2A,$2B, $2A,$2B,$2A,$2C, $3C,$3A,$3B,$3A, $3B,$3A,$3B,$3A, $3B,$3A,$3B,$3A, $38,$57,$27,$FF  ; 11
+  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ;  9
+  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ; 10
+  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ; 11
                                                                                                                                          
-  .db $FF,$27,$34,$30, $31,$32,$33,$31, $32,$33,$31,$32, $33,$31,$32,$33, $31,$32,$33,$31, $32,$33,$31,$32, $33,$31,$32,$33, $43,$34,$27,$FF  ; 12
-  .db $FF,$27,$57,$2F, $33,$31,$32,$33, $31,$32,$33,$31, $32,$33,$31,$32, $33,$31,$32,$33, $31,$32,$33,$31, $32,$33,$31,$32, $41,$57,$27,$FF  ; 13
-  .db $FF,$27,$34,$30, $31,$32,$33,$31, $32,$33,$31,$32, $33,$31,$32,$33, $31,$32,$33,$31, $32,$33,$31,$32, $33,$31,$32,$33, $43,$34,$27,$FF  ; 14
-  .db $FF,$2E,$57,$2F, $33,$31,$32,$33, $31,$32,$33,$31, $32,$33,$31,$32, $33,$31,$32,$33, $31,$32,$33,$31, $32,$33,$31,$32, $41,$57,$2E,$FF  ; 15
+  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ; 12
+  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ; 13
+  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ; 14
+  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ; 15
                                                                                                                                          
-  .db $FF,$3E,$57,$2F, $31,$32,$33,$31, $32,$33,$31,$32, $33,$31,$32,$33, $31,$32,$33,$31, $32,$33,$31,$32, $33,$31,$32,$33, $41,$57,$3E,$FF  ; 16
-  .db $FF,$2E,$57,$2F, $33,$31,$32,$33, $31,$32,$33,$31, $32,$33,$31,$32, $33,$31,$32,$33, $31,$32,$33,$31, $32,$33,$31,$32, $41,$57,$2E,$FF  ; 17
-  .db $FF,$3E,$57,$2F, $31,$32,$33,$31, $32,$33,$31,$32, $33,$31,$32,$33, $31,$32,$33,$31, $32,$33,$31,$32, $33,$31,$32,$33, $41,$57,$3E,$FF  ; 18
-  .db $FF,$2E,$57,$2F, $33,$31,$32,$33, $31,$32,$33,$31, $32,$33,$31,$32, $33,$31,$32,$33, $31,$32,$33,$31, $32,$33,$31,$32, $41,$57,$2E,$FF  ; 19
+  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ; 16
+  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ; 17
+  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ; 18
+  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ; 19
                                                                                                                                          
-  .db $FF,$3E,$57,$2F, $31,$32,$33,$31, $32,$33,$31,$32, $33,$31,$32,$33, $31,$32,$33,$31, $32,$33,$31,$32, $33,$31,$32,$33, $41,$57,$3E,$FF  ; 20
-  .db $FF,$27,$31,$40, $33,$31,$32,$33, $31,$32,$33,$31, $32,$33,$31,$32, $33,$31,$32,$33, $31,$32,$33,$31, $32,$33,$31,$32, $44,$31,$27,$FF  ; 21
-  .db $FF,$27,$57,$2F, $31,$32,$33,$31, $32,$33,$31,$32, $33,$31,$32,$33, $31,$32,$33,$31, $32,$33,$31,$32, $33,$31,$32,$33, $41,$57,$27,$FF  ; 22
-  .db $FF,$27,$31,$40, $33,$31,$32,$33, $31,$32,$33,$31, $32,$33,$31,$32, $33,$31,$32,$33, $31,$32,$33,$31, $32,$33,$31,$32, $44,$31,$27,$FF  ; 23
+  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ; 20
+  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ; 21
+  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ; 22
+  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ; 23
                                                                                                                                          
-  .db $FF,$27,$58,$38, $46,$47,$46,$47, $46,$47,$46,$47, $46,$45,$45,$45, $45,$45,$46,$45, $49,$48,$49,$48, $49,$48,$49,$48, $28,$59,$27,$FF  ; 24
-  .db $FF,$27,$38,$57, $2F,$35,$2F,$35, $2F,$35,$2F,$35, $2F,$57,$57,$57, $57,$57,$2F,$57, $36,$41,$36,$41, $36,$41,$36,$41, $57,$28,$27,$FF  ; 25
-  .db $FF,$25,$26,$26, $26,$26,$26,$26, $26,$26,$26,$26, $26,$2D,$3D,$2D, $3D,$2D,$3D,$26, $26,$26,$26,$26, $26,$26,$26,$26, $26,$26,$25,$FF  ; 26
+  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ; 24
+  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ; 25
+  .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ; 26
   .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ; 27
                                                                                                                                              
   .db $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF, $FF,$FF,$FF,$FF  ; 28 last row
@@ -656,13 +665,13 @@ background:
 attribute:
 ; Burbl Turtl
 ;      BRBLTRTL   BRBLTRTL   BRBLTRTL   BRBLTRTL   BRBLTRTL   BRBLTRTL   BRBLTRTL   BRBLTRTL
-  .db %00000000, %00000000, %00000000, %00000000, %00000000, %00000000, %01010000, %00000000 ;  0-3
-  .db %00000000, %00000000, %00000000, %00000000, %00000000, %00000000, %01010101, %00000000 ;  4-7
-  .db %00010101, %00000101, %00000101, %00000101, %00000101, %00000101, %00000101, %01000101 ;  8-11
-  .db %00010001, %01010101, %01010101, %01010101, %01010101, %01010101, %01010101, %01000100 ; 12-15
-  .db %00010001, %01010101, %01010101, %01010101, %01010101, %01010101, %01010101, %01000100 ; 16-19
-  .db %00010001, %01010101, %01010101, %01010101, %01010101, %01010101, %01010101, %01000100 ; 20-23
-  .db %01010001, %01010000, %01010000, %01010000, %01010000, %01010000, %01010000, %01010100 ; 24-27
+  .db %01010000, %00010000, %00000000, %01000000, %00010000, %00000000, %01000000, %01010000 ;  0-3
+  .db %00000000, %00000000, %00000000, %00000000, %00000000, %00000000, %00000000, %00000000 ;  4-7
+  .db %00000000, %00000000, %00000000, %00000000, %00000000, %00000000, %00000000, %00000000 ;  8-11
+  .db %00000000, %00000000, %00000000, %00000000, %00000000, %00000000, %00000000, %00000000 ; 12-15
+  .db %00000000, %00000000, %00000000, %00000000, %00000000, %00000000, %00000000, %00000000 ; 16-19
+  .db %00000000, %00000000, %00000000, %00000000, %00000000, %00000000, %00000000, %00000000 ; 20-23
+  .db %00000000, %00000000, %00000000, %00000000, %00000000, %00000000, %00000000, %00000000 ; 24-27
   .db %00000000, %00000000, %00000000, %00000000, %00000000, %00000000, %00000000, %00000000 ; 28-31
 ;      BRBLTRTL   BRBLTRTL   BRBLTRTL   BRBLTRTL   BRBLTRTL   BRBLTRTL   BRBLTRTL   BRBLTRTL
 
