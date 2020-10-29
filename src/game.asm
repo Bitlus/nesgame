@@ -7,6 +7,8 @@
 ;;;;;;;;;;;;;;;
 
   .rsset $0000
+buttonsP1 .rs 1 ; player 1 controller data
+buttonsP2 .rs 1 ; player 2 controller data
 isWalking .rs 1
 animationCounter .rs 1
 playerAnimationCounter .rs 1
@@ -62,6 +64,15 @@ ROOM_UP    = $57
 ROOM_RIGHT = $D6
 ROOM_DOWN  = $AF
 ROOM_LEFT  = $1C
+
+BUTTON_A =$80
+BUTTON_B =$40
+BUTTON_SELECT =$20
+BUTTON_START =$10
+BUTTON_UP =$08
+BUTTON_DOWN =$04
+BUTTON_LEFT =$02
+BUTTON_RIGHT =$01
 
   .bank 0
   .org $C000 
