@@ -576,10 +576,70 @@ IdleSpriteDone:
 SubroutinesDone:
  
 NMI:
+  ; player stuff?
   LDA #$00
   STA $2003       ; set the low byte (00) of the RAM address
   LDA #$02
   STA $4014       ; set the high byte (02) of the RAM address, start the transfer
+
+  ; GAME STATE STRUCTURE
+  ;
+  ; NMI
+  ;
+  ; // start screen 
+  ; if (game state is start screen) {
+  ;
+  ;     if (the game state only just changed to start screen) {
+  ;         load start screen to nametable;
+  ;     }
+  ;
+  ;     set ppuscroll to the nametable with the start screen;
+  ;
+  ;     check for start button press;
+  ;
+  ;     if (start button pressed) {
+  ;         set gamestate to playing;
+  ;     }
+  ; }
+  ;
+  ; // playing 
+  ; else if (game state is playing) {
+  ;
+  ;     if (the game state only just changed to playing) {
+  ;         load the level to the name table;
+  ;     }
+  ;
+  ;     set ppuscroll to the nametable of the level;
+  ;
+  ;     player(s) input;
+  ;
+  ;     game logic;
+  ;
+  ;     sprite stuffs;
+  ;
+  ;     if (game ended) {
+  ;         set gamestate to game over;
+  ;     }
+  ; }
+  ;
+  ; // game over screen
+  ; else if (game state is game over) {
+  ;
+  ;     if (the game state only just changed to game over) {
+  ;         load start screen to nametable;
+  ;         draw player info to game over screen;
+  ;     }
+  ;
+  ;     set ppuscroll to the nametable with the start screen;
+  ;
+  ;     check for start button press;
+  ;
+  ;     if (start button pressed) {
+  ;         set gamestate to start screen;
+  ;     }
+  ; }
+  ;
+  ; RTI
 
   ; Set is walking flag
   LDA #$00
