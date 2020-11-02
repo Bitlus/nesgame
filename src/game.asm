@@ -133,46 +133,6 @@ LoadSpritesLoop:
   BNE LoadSpritesLoop   ; Branch to LoadSpritesLoop if compare was Not Equal to zero
                         ; if compare was equal to 32, keep going down
 
-LoadBackground:
-  LDA $2002       ; reset high/low latch
-  LDA #$20
-  STA $2006       ; write high byte
-  LDA #$00
-  STA $2006       ; write low byte
-
-  ; set up pointer to bg
-  LDA #LOW(background) ; #$00
-  STA bg_ptr_lo  ; put low byte of bg into pointer
-  LDA #HIGH(background)
-  STA bg_ptr_hi   ; put high byte into pointer
-
-  LDX #$04
-  LDY #$00
-LoadBackgroundLoop:
-  LDA [bg_ptr_lo], y ; one byte from address + y
-  STA $2007
-  INY                 ; increment inner loop counter
-  BNE LoadBackgroundLoop 
-  INC bg_ptr_hi
-  DEX 
-  BNE LoadBackgroundLoop
-      
-LoadAttribute:
- CLC
- LDA $2002              ; read PPU status to reset the high/low latch
- LDA #$23
- STA $2006              ; write the high byte of $23C0 address
- LDA #$C0
- STA $2006              ; write the low byte of $23C0 address
- LDX #$00               ; start out at 0
-LoadAttributeLoop:
- LDA attribute, x       ; load data from address (attribute + the value in x)
- STA $2007              ; write to PPU
- INX                    ; X = X + 1
- CPX #$40               ; Compare X to hex $40, decimal 64
- BNE LoadAttributeLoop  ; Branch to LoadAttributeLoop if compare was Not Equal to zero
-                        ; if compare was equal to 64, keep going down
-
 						
   LDA #%10010000   ; enable NMI, sprites from Pattern Table 0, background from Pattern Table 1
   STA $2000
@@ -202,11 +162,102 @@ InitVariables:
   STA bg_money_offset
   LDA #RIGHT
   STA player_1_dir
+  LDA #TITLESCREEN
+  STA gamestate
+  LDA #GAMEOVER
+  STA gamestate_prev
 
 Forever:
   JMP Forever     ;jump back to Forever, infinite loop
   
 Subroutines:
+
+; loads bg
+LoadBackground:
+  LDA $2002       ; reset high/low latch
+  LDA #$20
+  STA $2006       ; write high byte
+  LDA #$00
+  STA $2006       ; write low byte
+
+  ; set up pointer to bg
+  LDA #LOW(background) ; #$00
+  STA bg_ptr_lo  ; put low byte of bg into pointer
+  LDA #HIGH(background)
+  STA bg_ptr_hi   ; put high byte into pointer
+
+  LDX #$04
+  LDY #$00
+LoadBackgroundLoop:
+  LDA [bg_ptr_lo], y ; one byte from address + y
+  STA $2007
+  INY                 ; increment inner loop counter
+  BNE LoadBackgroundLoop 
+  INC bg_ptr_hi
+  DEX 
+  BNE LoadBackgroundLoop
+  RTS
+      
+; loads bg attribute
+LoadBackgroundAttr:
+  CLC
+  LDA $2002              ; read PPU status to reset the high/low latch
+  LDA #$23
+  STA $2006              ; write the high byte of $23C0 address
+  LDA #$C0
+  STA $2006              ; write the low byte of $23C0 address
+  LDX #$00               ; start out at 0
+LoadAttributeLoop:
+  LDA attribute, x       ; load data from address (attribute + the value in x)
+  STA $2007              ; write to PPU
+  INX                    ; X = X + 1
+  CPX #$40               ; Compare X to hex $40, decimal 64
+  BNE LoadAttributeLoop  ; Branch to LoadAttributeLoop if compare was Not Equal to zero
+  RTS
+
+; loads title bg
+LoadTitle:
+  LDA $2002       ; reset high/low latch
+  LDA #$20
+  STA $2006       ; write high byte
+  LDA #$00
+  STA $2006       ; write low byte
+
+  ; set up pointer to bg
+  LDA #LOW(titlescreen) ; #$00
+  STA bg_ptr_lo  ; put low byte of bg into pointer
+  LDA #HIGH(titlescreen)
+  STA bg_ptr_hi   ; put high byte into pointer
+
+  LDX #$04
+  LDY #$00
+LoadTitleLoop:
+  LDA [bg_ptr_lo], y ; one byte from address + y
+  STA $2007
+  INY                 ; increment inner loop counter
+  BNE LoadTitleLoop 
+  INC bg_ptr_hi
+  DEX 
+  BNE LoadTitleLoop
+  RTS
+      
+; loads title attribute
+LoadTitleAttr:
+ CLC
+ LDA $2002                  ; read PPU status to reset the high/low latch
+ LDA #$23
+ STA $2006                  ; write the high byte of $23C0 address
+ LDA #$C0
+ STA $2006                  ; write the low byte of $23C0 address
+ LDX #$00                   ; start out at 0
+LoadTitleAttrLoop:
+ LDA titlescreen_attr, x    ; load data from address (attribute + the value in x)
+ STA $2007                  ; write to PPU
+ INX                        ; X = X + 1
+ CPX #$40                   ; Compare X to hex $40, decimal 64
+ BNE LoadTitleAttrLoop      ; Branch to LoadAttributeLoop if compare was Not Equal to zero
+ RTS
+
 
 IncrementMoney:
   CLC
@@ -584,12 +635,6 @@ IdleSpriteDone:
 SubroutinesDone:
  
 NMI:
-  ; player stuff?
-  LDA #$00
-  STA $2003       ; set the low byte (00) of the RAM address
-  LDA #$02
-  STA $4014       ; set the high byte (02) of the RAM address, start the transfer
-
   ; GAME STATE STRUCTURE
   ;
   ; NMI
@@ -649,6 +694,47 @@ NMI:
   ;
   ; RTI
 
+CheckGamestate:
+  LDA gamestate
+  CMP #TITLESCREEN      ; if gamestate is TITLESCREEN
+  BEQ GameTitle         ; jump to GameTitle
+  CMP #PLAYING          ; else if gamestate is PLAYING
+  BEQ GamePlaying       ; jump to GamePlaying
+  JMP GameOver          ; else jump to GameOver
+
+GameTitle:
+  CMP gamestate_prev      ; check if A reg (gamestate) has changed
+  BEQ GameTitle_NoLoad    ; if it hasn't, skip loading
+  STA gamestate_prev      ; set gamestate prev as the current gamestate
+
+  ; load bg and attrib tables
+  JSR LoadTitle
+  JSR LoadTitleAttr
+
+GameTitle_NoLoad:
+
+  ; do titlescreen stuff
+
+  JSR CameraScroll       ; set camera scroll
+
+  JMP ReturnFromInterrupt
+  
+GamePlaying:
+  CMP gamestate_prev        ; check if A reg (gamestate) has changed
+  BEQ GamePlaying_NoLoad    ; if it hasn't, skip loading
+  STA gamestate_prev        ; set gamestate prev as the current gamestate
+
+  ; load bg and attrib tables
+  JSR LoadBackground
+  JSR LoadBackgroundAttr
+
+GamePlaying_NoLoad:
+  ; player stuff?
+  LDA #$00
+  STA $2003       ; set the low byte (00) of the RAM address
+  LDA #$02
+  STA $4014       ; set the high byte (02) of the RAM address, start the transfer
+
   ; Set is walking flag
   LDA #$00
   STA isWalking
@@ -663,6 +749,16 @@ NMI:
   ;JSR IncrementMoney     ; increment money counter
   ;JSR DrawMoney          ; draw money to screen
   JSR CameraScroll       ; set camera scroll
+
+  JMP ReturnFromInterrupt
+
+GameOver:
+  CMP gamestate_prev        ; check if A reg (gamestate) has changed
+  BEQ GameOver_NoLoad    ; if it hasn't, skip loading
+  STA gamestate_prev        ; set gamestate prev as the current gamestate
+  ; jsr gameover bg and attr
+GameOver_NoLoad:
+  ; do gameover stuff
 
 ReturnFromInterrupt:
   RTI             ; return from interrupt
