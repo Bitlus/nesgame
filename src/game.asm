@@ -14,6 +14,9 @@ playerFrame .rs 1
 bg_ptr_lo .rs 1 ; bg pointer low byte
 bg_ptr_hi .rs 1 ; bg pointer high byte
 
+gamestate       .rs 1 ; state for game
+gamestate_prev  .rs 1 ; gamestate previous tick
+
 bg_money_offset .rs 1 ; offset to money
 money_thousands .rs 1 ; money counter for thousands
 money_hundreds  .rs 1 ; money counter for hundreds
@@ -50,6 +53,11 @@ bullet_2_y        .rs 1 ; bullet 2 y coord
 ; Bullet constants
 BULLET_VEL = $05
 BULLET_OFFSET = $10
+
+; gamestate enum
+TITLESCREEN = $0
+PLAYING     = $1
+GAMEOVER    = $2
 
 ; Direction Enum
 DEAD  = $0
