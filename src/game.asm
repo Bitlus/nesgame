@@ -7,6 +7,7 @@
 ;;;;;;;;;;;;;;;
 
   .rsset $0000
+testing .rs 1
 buttonsP1 .rs 1 ; player 1 controller data
 buttonsP2 .rs 1 ; player 2 controller data
 isWalking .rs 1
@@ -207,6 +208,7 @@ InitVariables:
   STA player_1_dir
 
 Forever:
+  NOP
   JMP Forever     ;jump back to Forever, infinite loop
   
 Subroutines:
@@ -358,207 +360,207 @@ HandleBulletDone:
   STA $0213
   RTS
 
-HandleController:
-LatchController:
-  LDA #$01
-  STA $4016
-  LDA #$00
-  STA $4016       ; tell both the controllers to latch buttons
-
-
-ReadA: 
-  LDA $4016       ; player 1 - A
-  AND #%00000001  ; only look at bit 0
-  BEQ ReadADone   ; branch to ReadADone if button is NOT pressed (0)
-                  ; add instructions here to do something when button IS pressed (1)
-  LDA bullet_1_dir
-  CMP #DEAD
-  BNE ReadADone
-  ; set bullet enum
-  LDA player_1_dir
-  STA bullet_1_dir
-  ; set bullet x, y coords
-  LDA player_1_x
-  CLC
-  ADC #$06
-  STA bullet_1_x
-  LDA player_1_y
-  CLC
-  ADC #$06
-  STA bullet_1_y
-ReadADone:        ; handling this button is done
-  
-
-ReadB: 
-  LDA $4016       ; player 1 - B
-  AND #%00000001  ; only look at bit 0
-  BEQ ReadBDone   ; branch to ReadBDone if button is NOT pressed (0)
-ReadBDone:        ; handling this button is done
-
-ReadSelect:
-  LDA $4016
-  AND #%00000001       ; only look at bit 0
-  BEQ ReadSelectDone   ; branch to ReadBDone if button is NOT pressed (0)
-ReadSelectDone:
-
-ReadStart:
-  LDA $4016
-  AND #%00000001      ; only look at bit 0
-  BEQ ReadStartDone   ; branch to ReadBDone if button is NOT pressed (0)
-ReadStartDone:
-
-ReadUp:
-  LDA $4016
-  AND #%00000001   ; only look at bit 0
-  BEQ ReadUpDone   ; branch to ReadBDone if button is NOT pressed (0)
-
-  ; Set isWalking flag
-  LDA #$01
-  STA isWalking
-  LDA #UP
-  STA player_1_dir
-
-  ; Set correct sprite tiles
-  JMP UpAnimation
-
-InitUpLoop:
-  ; Temp code to box player in prototype room
-  LDA $0200
-  CMP #$57 ; 87 in decimal
-  BCC ReadUpDone
-
-  ; Update player sprites Y positions
-  LDX #$00
-MoveUpLoop:
-  LDA $0200, X
-  SEC
-  SBC #$01
-  STA $0200, X
-  TXA
-  CLC
-  ADC #$04
-  TAX
-  CPX #$10 ; compare X to 16
-  BNE MoveUpLoop
-
-ReadUpDone:
-
-ReadDown:
-  LDA $4016
-  AND #%00000001     ; only look at bit 0
-  BEQ ReadDownDone   ; branch to ReadBDone if button is NOT pressed (0)
-
-  ; if walking skip
-  LDA isWalking
-  CMP #$01
-  BEQ ReadDownDone
-
-  ; Set isWalking flag
-  LDA #$01
-  STA isWalking
-  LDA #DOWN
-  STA player_1_dir
-
-  JMP DownAnimation
-
-InitDownLoop:
-  ; Temp code to box player in prototype room
-  LDA $0200
-  CMP #$AF ; 175 in decimal
-  BCS ReadDownDone
-
-  LDX #$00
-MoveDownLoop:
-  LDA $0200, X
-  CLC
-  ADC #$01
-  STA $0200, X
-  TXA
-  CLC
-  ADC #$04
-  TAX
-  CPX #$10 ; compare X to 16
-  BNE MoveDownLoop
-
-ReadDownDone:
-
-ReadLeft:
-  LDA $4016
-  AND #%00000001     ; only look at bit 0
-  BEQ ReadLeftDone   ; branch to ReadBDone if button is NOT pressed (0)
-
-  ; if walking skip
-  LDA isWalking
-  CMP #$01
-  BEQ ReadLeftDone
-
-  ; Set isWalking flag
-  LDA #$01
-  STA isWalking
-  LDA #LEFT
-  STA player_1_dir
-
-  JMP LeftAnimation
-  
-InitLeftLoop:
-  ; Temp code to box player in prototype room
-  LDA $0203
-  CMP #$1C ; 28 in decimal
-  BCC ReadLeftDone
-
-  LDX #$00
-MoveLeftLoop:
-  LDA $0203, X
-  SEC
-  SBC #$01
-  STA $0203, X
-  TXA
-  CLC
-  ADC #$04
-  TAX
-  CPX #$10 ; compare X to 16
-  BNE MoveLeftLoop
-
-ReadLeftDone:
-
-ReadRight:
-  LDA $4016
-  AND #%00000001      ; only look at bit 0
-  BEQ ReadRightDone   ; branch to ReadBDone if button is NOT pressed (0)
-
-  ; if walking skip
-  LDA isWalking
-  CMP #$01
-  BEQ ReadRightDone
-
-  ; Set isWalking flag
-  LDA #$01
-  STA isWalking
-  LDA #RIGHT
-  STA player_1_dir
-  
-  JMP RightAnimation
-
-InitRightLoop:
-  ; Temp code to box player in prototype room
-  LDA $0203
-  CMP #$D6 ; 175 in decimal
-  BCS ReadRightDone
-
-  LDX #$00
-MoveRightLoop:
-  LDA $0203, X
-  CLC
-  ADC #$01
-  STA $0203, X
-  TXA
-  CLC
-  ADC #$04
-  TAX
-  CPX #$10 ; compare X to 16
-  BNE MoveRightLoop
-
-ReadRightDone:
+;HandleController:
+;LatchController:
+  ;LDA #$01
+  ;STA $4016
+  ;LDA #$00
+  ;STA $4016       ; tell both the controllers to latch buttons
+;
+;
+;ReadA: 
+  ;LDA $4016       ; player 1 - A
+  ;AND #%00000001  ; only look at bit 0
+  ;BEQ ReadADone   ; branch to ReadADone if button is NOT pressed (0)
+                  ;; add instructions here to do something when button IS pressed (1)
+  ;LDA bullet_1_dir
+  ;CMP #DEAD
+  ;BNE ReadADone
+  ;; set bullet enum
+  ;LDA player_1_dir
+  ;STA bullet_1_dir
+  ;; set bullet x, y coords
+  ;LDA player_1_x
+  ;CLC
+  ;ADC #$06
+  ;STA bullet_1_x
+  ;LDA player_1_y
+  ;CLC
+  ;ADC #$06
+  ;STA bullet_1_y
+;ReadADone:        ; handling this button is done
+;  
+;
+;ReadB: 
+  ;LDA $4016       ; player 1 - B
+  ;AND #%00000001  ; only look at bit 0
+  ;BEQ ReadBDone   ; branch to ReadBDone if button is NOT pressed (0)
+;ReadBDone:        ; handling this button is done
+;
+;ReadSelect:
+  ;LDA $4016
+  ;AND #%00000001       ; only look at bit 0
+  ;BEQ ReadSelectDone   ; branch to ReadBDone if button is NOT pressed (0)
+;ReadSelectDone:
+;
+;ReadStart:
+  ;LDA $4016
+  ;AND #%00000001      ; only look at bit 0
+  ;BEQ ReadStartDone   ; branch to ReadBDone if button is NOT pressed (0)
+;ReadStartDone:
+;
+;ReadUp:
+  ;LDA $4016
+  ;AND #%00000001   ; only look at bit 0
+  ;BEQ ReadUpDone   ; branch to ReadBDone if button is NOT pressed (0)
+;
+  ;; Set isWalking flag
+  ;LDA #$01
+  ;STA isWalking
+  ;LDA #UP
+  ;STA player_1_dir
+;
+  ;; Set correct sprite tiles
+  ;JMP UpAnimation
+;
+;InitUpLoop:
+  ;; Temp code to box player in prototype room
+  ;LDA $0200
+  ;CMP #$57 ; 87 in decimal
+  ;BCC ReadUpDone
+;
+  ;; Update player sprites Y positions
+  ;LDX #$00
+;MoveUpLoop:
+  ;LDA $0200, X
+  ;SEC
+  ;SBC #$01
+  ;STA $0200, X
+  ;TXA
+  ;CLC
+  ;ADC #$04
+  ;TAX
+  ;CPX #$10 ; compare X to 16
+  ;BNE MoveUpLoop
+;
+;ReadUpDone:
+;
+;ReadDown:
+  ;LDA $4016
+  ;AND #%00000001     ; only look at bit 0
+  ;BEQ ReadDownDone   ; branch to ReadBDone if button is NOT pressed (0)
+;
+  ;; if walking skip
+  ;LDA isWalking
+  ;CMP #$01
+  ;BEQ ReadDownDone
+;
+  ;; Set isWalking flag
+  ;LDA #$01
+  ;STA isWalking
+  ;LDA #DOWN
+  ;STA player_1_dir
+;
+  ;JMP DownAnimation
+;
+;InitDownLoop:
+  ;; Temp code to box player in prototype room
+  ;LDA $0200
+  ;CMP #$AF ; 175 in decimal
+  ;BCS ReadDownDone
+;
+  ;LDX #$00
+;MoveDownLoop:
+  ;LDA $0200, X
+  ;CLC
+  ;ADC #$01
+  ;STA $0200, X
+  ;TXA
+  ;CLC
+  ;ADC #$04
+  ;TAX
+  ;CPX #$10 ; compare X to 16
+  ;BNE MoveDownLoop
+;
+;ReadDownDone:
+;
+;ReadLeft:
+  ;LDA $4016
+  ;AND #%00000001     ; only look at bit 0
+  ;BEQ ReadLeftDone   ; branch to ReadBDone if button is NOT pressed (0)
+;
+  ;; if walking skip
+  ;LDA isWalking
+  ;CMP #$01
+  ;BEQ ReadLeftDone
+;
+  ;; Set isWalking flag
+  ;LDA #$01
+  ;STA isWalking
+  ;LDA #LEFT
+  ;STA player_1_dir
+;
+  ;JMP LeftAnimation
+;  
+;InitLeftLoop:
+  ;; Temp code to box player in prototype room
+  ;LDA $0203
+  ;CMP #$1C ; 28 in decimal
+  ;BCC ReadLeftDone
+;
+  ;LDX #$00
+;MoveLeftLoop:
+  ;LDA $0203, X
+  ;SEC
+  ;SBC #$01
+  ;STA $0203, X
+  ;TXA
+  ;CLC
+  ;ADC #$04
+  ;TAX
+  ;CPX #$10 ; compare X to 16
+  ;BNE MoveLeftLoop
+;
+;ReadLeftDone:
+;
+;ReadRight:
+  ;LDA $4016
+  ;AND #%00000001      ; only look at bit 0
+  ;BEQ ReadRightDone   ; branch to ReadBDone if button is NOT pressed (0)
+;
+  ;; if walking skip
+  ;LDA isWalking
+  ;CMP #$01
+  ;BEQ ReadRightDone
+;
+  ;; Set isWalking flag
+  ;LDA #$01
+  ;STA isWalking
+  ;LDA #RIGHT
+  ;STA player_1_dir
+;  
+  ;JMP RightAnimation
+;
+;InitRightLoop:
+  ;; Temp code to box player in prototype room
+  ;LDA $0203
+  ;CMP #$D6 ; 175 in decimal
+  ;BCS ReadRightDone
+;
+  ;LDX #$00
+;MoveRightLoop:
+  ;LDA $0203, X
+  ;CLC
+  ;ADC #$01
+  ;STA $0203, X
+  ;TXA
+  ;CLC
+  ;ADC #$04
+  ;TAX
+  ;CPX #$10 ; compare X to 16
+  ;BNE MoveRightLoop
+;
+;ReadRightDone:
 
 IdleSprite:
   LDA isWalking
@@ -661,7 +663,8 @@ NMI:
   LDA $0203
   STA player_1_x
 
-  JSR HandleController   ; do the controller thing
+  JSR ReadControllers ; do the controller thing
+  JSR HandleGameInputs   
   JSR HandleBullet       ; handle player bullet
   ;JSR IncrementMoney     ; increment money counter
   ;JSR DrawMoney          ; draw money to screen
@@ -670,8 +673,10 @@ NMI:
 ReturnFromInterrupt:
   RTI             ; return from interrupt
 
-PlayerAnimationFile:
+  ; external files
   .include "player-animation.asm"
+  .include "read-controllers.asm"
+  .include "player-inputs.asm"
 
 
  
