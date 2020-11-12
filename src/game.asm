@@ -488,8 +488,8 @@ palette:
   ; background palettes
   .db $0F,$0F,$08,$37 ; 00
   .db $01,$0F,$17,$37 ; 01
-  .db $0F,$00,$10,$30 ; 10
-  .db $0F,$00,$10,$30 ; 11
+  .db $0F,$0F,$0C,$08 ; 10
+  .db $0F,$00,$10,$08 ; 11
   
   ; sprite palettes
   .db $0C,$11,$0F,$30 ; 00
