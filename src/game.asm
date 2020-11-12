@@ -658,14 +658,15 @@ NMI:
   LDA #$00
   STA isWalking
 
-  LDA $0200
-  STA player_1_y
-  LDA $0203
-  STA player_1_x
+  ;LDA $0200
+  ;STA player_1_y
+  ;LDA $0203
+  ;STA player_1_x
 
   JSR ReadControllers ; do the controller thing
   JSR HandleGameInputs   
   JSR HandleBullet       ; handle player bullet
+  JSR Player1Sprite
   ;JSR IncrementMoney     ; increment money counter
   ;JSR DrawMoney          ; draw money to screen
   JSR CameraScroll       ; set camera scroll
@@ -677,7 +678,7 @@ ReturnFromInterrupt:
   .include "player-animation.asm"
   .include "read-controllers.asm"
   .include "player-inputs.asm"
-
+  .include "sprite-handler.asm"
 
  
 ;;;;;;;;;;;;;;  
@@ -703,10 +704,10 @@ palette:
 
 sprites:
      ;vert tile attr horiz
-  .db $80, $02, $00, $80   ;sprite 0
-  .db $80, $03, $00, $88   ;sprite 1
-  .db $88, $12, $00, $80   ;sprite 2
-  .db $88, $13, $00, $88   ;sprite 3
+  .db $00, $02, $00, $00   ;sprite 0
+  .db $00, $03, $00, $08   ;sprite 1
+  .db $08, $12, $00, $00   ;sprite 2
+  .db $08, $13, $00, $08   ;sprite 3
 
 bullet:
   .db $88, $08, $00, $88   ;sprite 3
