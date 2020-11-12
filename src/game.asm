@@ -493,7 +493,7 @@ palette:
   
   ; sprite palettes
   .db $0C,$11,$0F,$30 ; 00
-  .db $31,$02,$38,$3c ; 01
+  .db $0C,$05,$1D,$30 ; 01
   .db $22,$29,$1A,$0F ; 10
   .db $22,$36,$17,$0F ; 11
 
@@ -511,10 +511,10 @@ bullet:
   .db $88, $08, $00, $88   ;sprite 3
 
 p2sprite
-  .db $00, $02, $00, $00   ;sprite 0
-  .db $00, $03, $00, $08   ;sprite 1
-  .db $08, $12, $00, $00   ;sprite 2
-  .db $08, $13, $00, $08   ;sprite 3
+  .db $00, $02, $01, $00   ;sprite 0
+  .db $00, $03, $01, $08   ;sprite 1
+  .db $08, $12, $01, $00   ;sprite 2
+  .db $08, $13, $01, $08   ;sprite 3
 
 endsprites:
 
