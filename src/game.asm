@@ -58,10 +58,10 @@ RIGHT = $2
 DOWN  = $3
 LEFT  = $4
 
-ROOM_UP    = $57
-ROOM_RIGHT = $D6
-ROOM_DOWN  = $AF
-ROOM_LEFT  = $1C
+ROOM_UP    = $20
+ROOM_RIGHT = $F0
+ROOM_DOWN  = $D7
+ROOM_LEFT  = $01
 
   .bank 0
   .org $C000 
@@ -413,7 +413,7 @@ ReadUp:
 InitUpLoop:
   ; Temp code to box player in prototype room
   LDA $0200
-  CMP #$57 ; 87 in decimal
+  CMP #ROOM_UP ; 87 in decimal
   BCC ReadUpDone
 
   ; Update player sprites Y positions
@@ -453,7 +453,7 @@ ReadDown:
 InitDownLoop:
   ; Temp code to box player in prototype room
   LDA $0200
-  CMP #$AF ; 175 in decimal
+  CMP #ROOM_DOWN ; 175 in decimal
   BCS ReadDownDone
 
   LDX #$00
@@ -492,7 +492,7 @@ ReadLeft:
 InitLeftLoop:
   ; Temp code to box player in prototype room
   LDA $0203
-  CMP #$1C ; 28 in decimal
+  CMP #ROOM_LEFT ; 28 in decimal
   BCC ReadLeftDone
 
   LDX #$00
@@ -531,7 +531,7 @@ ReadRight:
 InitRightLoop:
   ; Temp code to box player in prototype room
   LDA $0203
-  CMP #$D6 ; 175 in decimal
+  CMP #ROOM_RIGHT ; 175 in decimal
   BCS ReadRightDone
 
   LDX #$00
@@ -673,7 +673,7 @@ palette:
   ; background palettes
   .db $0F,$0F,$08,$37 ; 00
   .db $01,$0F,$17,$37 ; 01
-  .db $0F,$00,$10,$30 ; 10
+  .db $0F,$0F,$0C,$08 ; 10
   .db $0F,$00,$10,$30 ; 11
   
   ; sprite palettes
