@@ -72,6 +72,58 @@ P1ReadLeft:
   LDA #LEFT
   STA player_1_dir
 P1ReadLeftDone:
+
+P2ReadUp:
+  LDA #BUTTON_UP
+  BIT buttonsP2
+  BEQ P2ReadUpDone
+
+  ; move player
+  DEC player_2_y
+
+  ; set player direction
+  LDA #UP
+  STA player_2_dir
+P2ReadUpDone:
+
+P2ReadRight:
+  LDA #BUTTON_RIGHT
+  BIT buttonsP2
+  BEQ P2ReadRightDone
+  
+  ; move player
+  INC player_2_x
+
+  ; set player direction
+  LDA #RIGHT
+  STA player_2_dir
+P2ReadRightDone:
+
+P2ReadDown:
+  LDA #BUTTON_DOWN
+  BIT buttonsP2
+  BEQ P2ReadDownDone
+
+  ; move player
+  INC player_2_y
+
+  ; set player direction
+  LDA #DOWN
+  STA player_2_dir
+P2ReadDownDone:
+
+P2ReadLeft:
+  LDA #BUTTON_LEFT
+  BIT buttonsP2
+  BEQ P2ReadLeftDone
+
+  ; move player
+  DEC player_2_x
+
+  ; set player direction
+  LDA #LEFT
+  STA player_2_dir
+P2ReadLeftDone:
   
 HandleGameInputsDone:
   RTS

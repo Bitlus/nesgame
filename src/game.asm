@@ -133,7 +133,7 @@ LoadSpritesLoop:
   LDA sprites, x        ; load data from address (sprites +  x)
   STA $0200, x          ; store into RAM address ($0200 + x)
   INX                   ; X = X + 1
-  CPX #$14              ; Compare X to hex $20, decimal 32 to load 5 sprites
+  CPX #$24              ; Compare X to hex $24, decimal 36 to load 9 sprites
   BNE LoadSpritesLoop   ; Branch to LoadSpritesLoop if compare was Not Equal to zero
                         ; if compare was equal to 32, keep going down
 
@@ -509,6 +509,12 @@ sprites:
 
 bullet:
   .db $88, $08, $00, $88   ;sprite 3
+
+p2sprite
+  .db $00, $02, $00, $00   ;sprite 0
+  .db $00, $03, $00, $08   ;sprite 1
+  .db $08, $12, $00, $00   ;sprite 2
+  .db $08, $13, $00, $08   ;sprite 3
 
 endsprites:
 
