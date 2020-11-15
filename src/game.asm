@@ -564,6 +564,7 @@ NMI:
   JSR HandleBullet2
   JSR Player1Sprite
   JSR Player1Animation
+  JSR Player2Animation
   ;JSR IncrementMoney     ; increment money counter
   ;JSR DrawMoney          ; draw money to screen
   JSR CameraScroll       ; set camera scroll
