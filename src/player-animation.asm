@@ -341,7 +341,7 @@ Player2AnimationUpdate:
   CMP #RIGHT
   BEQ JumpToP2RightAnimation
   CMP #DOWN
-  ;BEQ JumpToP2DownAnimation
+  BEQ JumpToP2DownAnimation
   CMP #LEFT
   ;BEQ JumpToP2LeftAnimation
   JMP Player2AnimationDone
@@ -510,62 +510,62 @@ Player2DownAnimationUpdate:
 
 Player2DownFrame1:
   ; Change player sprite direction
-  LDA #%00000000 ; Set to not flip horizontal
-  STA $0202
-  STA $020A
-  LDA #%01000000 ; Set to not flip horizontal
-  STA $0206
-  STA $020E
+  LDA #%00000001 ; Set to not flip horizontal
+  STA $0216
+  STA $021E
+  LDA #%01000001 ; Set to not flip horizontal
+  STA $021A
+  STA $0222
 
   ; Set correct sprite tiles
   LDA #$20
-  STA $0201
+  STA $0215
   LDA #$20
-  STA $0205
+  STA $0219
   LDA #$30
-  STA $0209
+  STA $021D
   LDA #$30
-  STA $020D
+  STA $0221
 
   JMP Player2AnimationDone
 Player2DownFrame2:
   ; Change player sprite direction
-  LDA #%01000000 ; Set to flip horizontal
-  STA $0202
-  LDA #%00000000 ; Set to not flip horizontal
-  STA $0206
-  STA $020A
-  STA $020E
+  LDA #%01000001 ; Set to flip horizontal
+  STA $0216
+  LDA #%00000001 ; Set to not flip horizontal
+  STA $021A
+  STA $021E
+  STA $0222
 
   ; Set correct sprite tiles
   LDA #$22
-  STA $0201
+  STA $0215
   LDA #$22
-  STA $0205
+  STA $0219
   LDA #$24
-  STA $0209
+  STA $021D
   LDA #$25
-  STA $020D
+  STA $0221
 
   JMP Player2AnimationDone
 Player2DownFrame3:
   ; Change player sprite direction
-  LDA #%01000000 ; Set to flip horizontal
-  STA $0202
-  STA $020A
-  STA $020E
-  LDA #%00000000 ; Set to not flip horizontal
-  STA $0206
+  LDA #%01000001 ; Set to flip horizontal
+  STA $0216
+  STA $021E
+  STA $0222
+  LDA #%00000001 ; Set to not flip horizontal
+  STA $021A
 
   ; Set correct sprite tiles
   LDA #$22
-  STA $0201
+  STA $0215
   LDA #$22
-  STA $0205
+  STA $0219
   LDA #$25
-  STA $0209
+  STA $021D
   LDA #$24
-  STA $020D
+  STA $0221
 
   JMP Player2AnimationDone
 Player2LeftAnimationUpdate:
