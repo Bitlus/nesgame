@@ -10,7 +10,6 @@
 testing .rs 1
 buttonsP1 .rs 1 ; player 1 controller data
 buttonsP2 .rs 1 ; player 2 controller data
-isWalking .rs 1
 animationCounter .rs 1
 playerAnimationCounter .rs 1
 playerFrame .rs 1
@@ -33,6 +32,7 @@ player_1_y        .rs 1 ; player 1 y
 player_1_a_frame  .rs 1 ; player 1 animation frame
 player_1_health   .rs 1 ; player 1 health
 player_1_score    .rs 1 ; player 1 score
+player_1_walking  .rs 1 ; player 1 is walking
 
 player_2_dir      .rs 1 ; player 2 direction
 player_2_x        .rs 1 ; player 2 x
@@ -40,6 +40,7 @@ player_2_y        .rs 1 ; player 2 y
 player_2_a_frame  .rs 1 ; player 2 animation frame
 player_2_health   .rs 1 ; player 2 health
 player_2_score    .rs 1 ; player 2 score
+player_2_walking  .rs 1
 
 ; Bullets
 bullet_1_dir      .rs 1 ; bullet 1 direction
@@ -49,6 +50,10 @@ bullet_1_y        .rs 1 ; bullet 1 y coord
 bullet_2_dir      .rs 1 ; bullet 2 direction
 bullet_2_x        .rs 1 ; bullet 2 x coord
 bullet_2_y        .rs 1 ; bullet 2 y coord
+
+; misc constants
+TRUE = $01
+FALSE = $00
 
 ; Bullet constants
 BULLET_VEL = $05
@@ -66,19 +71,19 @@ ROOM_RIGHT = $F7
 ROOM_DOWN  = $DF
 ROOM_LEFT  = $08
 
-BUTTON_A =$80
-BUTTON_B =$40
-BUTTON_SELECT =$20
-BUTTON_START =$10
-BUTTON_UP =$08
-BUTTON_DOWN =$04
-BUTTON_LEFT =$02
-BUTTON_RIGHT =$01
+BUTTON_A = $80
+BUTTON_B = $40
+BUTTON_SELECT = $20
+BUTTON_START = $10
+BUTTON_UP = $08
+BUTTON_DOWN = $04
+BUTTON_LEFT = $02
+BUTTON_RIGHT = $01
 
-P1_START_X =$29
-P1_START_Y =$70
-P2_START_X =$C7
-P2_START_Y =$8D
+P1_START_X = $29
+P1_START_Y = $70
+P2_START_X = $C7
+P2_START_Y = $8D
 
   .bank 0
   .org $C000 
@@ -443,7 +448,7 @@ HandleBullet2Done:
   RTS
 
 IdleSprite:
-  LDA isWalking
+  LDA player_1_walking
   CMP #$00
   JMP IdleSpriteDone
 
@@ -535,8 +540,9 @@ NMI:
   ; RTI
 
   ; Set is walking flag
-  LDA #$00
-  STA isWalking
+  LDA #FALSE
+  STA player_1_walking
+  STA player_2_walking
 
   ;LDA $0200
   ;STA player_1_y

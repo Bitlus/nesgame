@@ -32,9 +32,18 @@ P1ReadUp:
   ; set player direction
   LDA #UP
   STA player_1_dir
+
+  ; set walking flag
+  LDA #TRUE
+  STA player_1_walking
 P1ReadUpDone:
 
 P1ReadRight:
+  ; check if player is already walking
+  LDA player_1_walking
+  CMP #TRUE
+  BEQ P2ReadA
+
   LDA #BUTTON_RIGHT
   BIT buttonsP1
   BEQ P1ReadRightDone
@@ -45,9 +54,18 @@ P1ReadRight:
   ; set player direction
   LDA #RIGHT
   STA player_1_dir
+
+  ; set walking flag
+  LDA #TRUE
+  STA player_1_walking
 P1ReadRightDone:
 
 P1ReadDown:
+  ; check if player is already walking
+  LDA player_1_walking
+  CMP #TRUE
+  BEQ P2ReadA
+
   LDA #BUTTON_DOWN
   BIT buttonsP1
   BEQ P1ReadDownDone
@@ -58,9 +76,18 @@ P1ReadDown:
   ; set player direction
   LDA #DOWN
   STA player_1_dir
+
+  ; set walking flag
+  LDA #TRUE
+  STA player_1_walking
 P1ReadDownDone:
 
 P1ReadLeft:
+  ; check if player is already walking
+  LDA player_1_walking
+  CMP #TRUE
+  BEQ P2ReadA
+
   LDA #BUTTON_LEFT
   BIT buttonsP1
   BEQ P1ReadLeftDone
@@ -71,6 +98,10 @@ P1ReadLeft:
   ; set player direction
   LDA #LEFT
   STA player_1_dir
+
+  ; set walking flag
+  LDA #TRUE
+  STA player_1_walking
 P1ReadLeftDone:
 
 P2ReadA
@@ -106,9 +137,18 @@ P2ReadUp:
   ; set player direction
   LDA #UP
   STA player_2_dir
+
+  ; set walking flag
+  LDA #TRUE
+  STA player_2_walking
 P2ReadUpDone:
 
 P2ReadRight:
+  ; check if player is already walking
+  LDA player_2_walking
+  CMP #TRUE
+  BEQ P2ReadLeftDone
+
   LDA #BUTTON_RIGHT
   BIT buttonsP2
   BEQ P2ReadRightDone
@@ -119,9 +159,18 @@ P2ReadRight:
   ; set player direction
   LDA #RIGHT
   STA player_2_dir
+
+  ; set walking flag
+  LDA #TRUE
+  STA player_2_walking
 P2ReadRightDone:
 
 P2ReadDown:
+  ; check if player is already walking
+  LDA player_2_walking
+  CMP #TRUE
+  BEQ P2ReadLeftDone
+
   LDA #BUTTON_DOWN
   BIT buttonsP2
   BEQ P2ReadDownDone
@@ -132,9 +181,18 @@ P2ReadDown:
   ; set player direction
   LDA #DOWN
   STA player_2_dir
+
+  ; set walking flag
+  LDA #TRUE
+  STA player_2_walking
 P2ReadDownDone:
 
 P2ReadLeft:
+  ; check if player is already walking
+  LDA player_2_walking
+  CMP #TRUE
+  BEQ P2ReadLeftDone
+
   LDA #BUTTON_LEFT
   BIT buttonsP2
   BEQ P2ReadLeftDone
@@ -145,6 +203,10 @@ P2ReadLeft:
   ; set player direction
   LDA #LEFT
   STA player_2_dir
+
+  ; set walking flag
+  LDA #TRUE
+  STA player_2_walking
 P2ReadLeftDone:
   
 HandleGameInputsDone:
