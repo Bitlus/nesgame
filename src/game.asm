@@ -10,8 +10,6 @@
 testing .rs 1
 buttonsP1 .rs 1 ; player 1 controller data
 buttonsP2 .rs 1 ; player 2 controller data
-animationCounter .rs 1
-playerAnimationCounter .rs 1
 playerFrame .rs 1
 bg_ptr_lo .rs 1 ; bg pointer low byte
 bg_ptr_hi .rs 1 ; bg pointer high byte
@@ -29,6 +27,7 @@ cam_y .rs 1 ; y camera PPUSCROLL
 player_1_dir      .rs 1 ; player 1 direction
 player_1_x        .rs 1 ; player 1 x
 player_1_y        .rs 1 ; player 1 y
+player_1_a_counter .rs 1
 player_1_a_frame  .rs 1 ; player 1 animation frame
 player_1_health   .rs 1 ; player 1 health
 player_1_score    .rs 1 ; player 1 score
@@ -37,6 +36,7 @@ player_1_walking  .rs 1 ; player 1 is walking
 player_2_dir      .rs 1 ; player 2 direction
 player_2_x        .rs 1 ; player 2 x
 player_2_y        .rs 1 ; player 2 y
+player_2_a_counter .rs 1
 player_2_a_frame  .rs 1 ; player 2 animation frame
 player_2_health   .rs 1 ; player 2 health
 player_2_score    .rs 1 ; player 2 score
@@ -207,8 +207,10 @@ LoadAttributeLoop:
 
 InitVariables:
   LDA #$00
-  STA animationCounter
-  STA playerAnimationCounter
+  STA player_1_a_counter
+  STA player_1_a_frame
+  STA player_2_a_counter
+  STA player_2_a_frame
   STA playerFrame
   STA cam_x
   STA cam_y
@@ -561,6 +563,7 @@ NMI:
   JSR HandleBullet       ; handle player bullet
   JSR HandleBullet2
   JSR Player1Sprite
+  JSR Player1Animation
   ;JSR IncrementMoney     ; increment money counter
   ;JSR DrawMoney          ; draw money to screen
   JSR CameraScroll       ; set camera scroll
