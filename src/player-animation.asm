@@ -343,7 +343,7 @@ Player2AnimationUpdate:
   CMP #DOWN
   BEQ JumpToP2DownAnimation
   CMP #LEFT
-  ;BEQ JumpToP2LeftAnimation
+  BEQ JumpToP2LeftAnimation
   JMP Player2AnimationDone
 
 ; Branch instructions breaking because branch is "too far" away
@@ -581,59 +581,59 @@ Player2LeftAnimationUpdate:
 
 Player2LeftFrame1:
   ; Change player sprite direction
-  LDA #%01000000 ; Set to flip horizontal
-  STA $0202
-  STA $0206
-  STA $020A
-  STA $020E
+  LDA #%01000001 ; Set to flip horizontal
+  STA $0216
+  STA $021A
+  STA $021E
+  STA $0222
 
   ; Set correct sprite tiles
   LDA #$01
-  STA $0201
+  STA $0215
   LDA #$00
-  STA $0205
+  STA $0219
   LDA #$11
-  STA $0209
+  STA $021D
   LDA #$10
-  STA $020D
+  STA $0221
 
   JMP Player2AnimationDone
 Player2LeftFrame2:
   ; Change player sprite direction
-  LDA #%01000000 ; Set to flip horizontal
-  STA $0202
-  STA $0206
-  STA $020A
-  STA $020E
+  LDA #%01000001 ; Set to flip horizontal
+  STA $0216
+  STA $021A
+  STA $021E
+  STA $0222
 
   ; Set correct sprite tiles
   LDA #$03
-  STA $0201
+  STA $0215
   LDA #$02
-  STA $0205
+  STA $0219
   LDA #$13
-  STA $0209
+  STA $021D
   LDA #$12
-  STA $020D
+  STA $0221
 
   JMP Player2AnimationDone
 Player2LeftFrame3:
   ; Change player sprite direction
-  LDA #%01000000 ; Set to flip horizontal
-  STA $0202
-  STA $0206
-  STA $020A
-  STA $020E
+  LDA #%01000001 ; Set to flip horizontal
+  STA $0216
+  STA $021A
+  STA $021E
+  STA $0222
 
   ; Set correct sprite tiles
   LDA #$05
-  STA $0201
+  STA $0215
   LDA #$04
-  STA $0205
+  STA $0219
   LDA #$15
-  STA $0209
+  STA $021D
   LDA #$14
-  STA $020D
+  STA $0221
 
   JMP Player2AnimationDone
 
