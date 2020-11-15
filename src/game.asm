@@ -61,10 +61,10 @@ RIGHT = $2
 DOWN  = $3
 LEFT  = $4
 
-ROOM_UP    = $57
-ROOM_RIGHT = $D6
-ROOM_DOWN  = $AF
-ROOM_LEFT  = $1C
+ROOM_UP    = $22
+ROOM_RIGHT = $F7
+ROOM_DOWN  = $DF
+ROOM_LEFT  = $08
 
 BUTTON_A =$80
 BUTTON_B =$40
@@ -74,6 +74,11 @@ BUTTON_UP =$08
 BUTTON_DOWN =$04
 BUTTON_LEFT =$02
 BUTTON_RIGHT =$01
+
+P1_START_X =$29
+P1_START_Y =$70
+P2_START_X =$C7
+P2_START_Y =$8D
 
   .bank 0
   .org $C000 
@@ -133,7 +138,7 @@ LoadSpritesLoop:
   LDA sprites, x        ; load data from address (sprites +  x)
   STA $0200, x          ; store into RAM address ($0200 + x)
   INX                   ; X = X + 1
-  CPX #$24              ; Compare X to hex $24, decimal 36 to load 9 sprites
+  CPX #$28              ; Compare X to hex $28, decimal 40 to load 10 sprites
   BNE LoadSpritesLoop   ; Branch to LoadSpritesLoop if compare was Not Equal to zero
                         ; if compare was equal to 32, keep going down
 
@@ -202,10 +207,24 @@ InitVariables:
   STA bullet_1_dir
   STA bullet_1_x
   STA bullet_1_y
+  STA bullet_2_dir
+  STA bullet_2_x
+  STA bullet_2_y
   LDA #$88          ; 132 tiles from bg offset
   STA bg_money_offset
   LDA #RIGHT
   STA player_1_dir
+  LDA #LEFT
+  STA player_2_dir
+  ; player positions
+  LDA #P1_START_X
+  STA player_1_x
+  LDA #P2_START_X
+  STA player_2_x
+  LDA #P1_START_Y
+  STA player_1_y
+  LDA #P2_START_Y
+  STA player_2_y
 
 Forever:
   NOP
@@ -360,6 +379,69 @@ HandleBulletDone:
   STA $0213
   RTS
 
+; Totally DRY code here....
+HandleBullet2:
+  LDA bullet_2_y
+  CMP #ROOM_UP
+  BCC set_bullet2_dead
+  CMP #ROOM_DOWN
+  BCS set_bullet2_dead
+  LDA bullet_2_x
+  CMP #ROOM_LEFT
+  BCC set_bullet2_dead
+  CMP #ROOM_RIGHT
+  BCS set_bullet2_dead
+  JMP chk_dead2
+set_bullet2_dead:  
+  LDA #DEAD
+  STA bullet_2_dir
+  ; if the bullet is dead, set x and y to 0 and end the subroutine
+chk_dead2:
+  LDA bullet_2_dir
+  CMP #DEAD
+  BNE chk_dir2
+  LDA #$00
+  STA bullet_2_x
+  STA bullet_2_y
+  JMP HandleBullet2Done
+chk_dir2:
+  ; if the bullet is not dead, increment its x or y coords based on the bullet's direction
+  CMP #UP
+  BNE HandleBullet2_chk_r
+  LDA bullet_2_y
+  SEC
+  SBC #BULLET_VEL
+  STA bullet_2_y
+  JMP HandleBullet2Done
+HandleBullet2_chk_r:
+  CMP #RIGHT
+  BNE HandleBullet2_chk_d
+  LDA bullet_2_x
+  CLC
+  ADC #BULLET_VEL
+  STA bullet_2_x
+  JMP HandleBullet2Done
+HandleBullet2_chk_d:
+  CMP #DOWN
+  BNE HandleBullet2_chk_l
+  LDA bullet_2_y
+  CLC
+  ADC #BULLET_VEL
+  STA bullet_2_y
+  JMP HandleBullet2Done
+HandleBullet2_chk_l:
+  LDA bullet_2_x
+  SEC
+  SBC #BULLET_VEL
+  STA bullet_2_x
+HandleBullet2Done:
+  ; store bullet x, y in sprite memory addresses
+  LDA bullet_2_y
+  STA $0224
+  LDA bullet_2_x
+  STA $0227
+  RTS
+
 IdleSprite:
   LDA isWalking
   CMP #$00
@@ -464,6 +546,7 @@ NMI:
   JSR ReadControllers ; do the controller thing
   JSR HandleGameInputs   
   JSR HandleBullet       ; handle player bullet
+  JSR HandleBullet2
   JSR Player1Sprite
   ;JSR IncrementMoney     ; increment money counter
   ;JSR DrawMoney          ; draw money to screen
@@ -515,6 +598,9 @@ p2sprite
   .db $00, $03, $01, $08   ;sprite 1
   .db $08, $12, $01, $00   ;sprite 2
   .db $08, $13, $01, $08   ;sprite 3
+
+bullet2:
+  .db $88, $08, $00, $88   ;sprite 3
 
 endsprites:
 

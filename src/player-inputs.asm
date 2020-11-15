@@ -73,6 +73,28 @@ P1ReadLeft:
   STA player_1_dir
 P1ReadLeftDone:
 
+P2ReadA
+; Check A Button
+  LDA #BUTTON_A
+  BIT buttonsP2 
+  BEQ P2ReadADone
+  LDA bullet_2_dir
+  CMP #DEAD
+  BNE P2ReadADone
+  ; set bullet enum
+  LDA player_2_dir
+  STA bullet_2_dir
+  ; set bullet x, y coords
+  LDA player_2_x
+  CLC
+  ADC #$06
+  STA bullet_2_x
+  LDA player_2_y
+  CLC
+  ADC #$06
+  STA bullet_2_y
+P2ReadADone:
+
 P2ReadUp:
   LDA #BUTTON_UP
   BIT buttonsP2
