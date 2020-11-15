@@ -22,6 +22,11 @@ HandleGameInputs:
 P1ReadADone:
 
 P1ReadUp:
+  ; Check collision with wall
+  LDA player_1_y
+  CMP #PLAYER_TOP_BOUND
+  BCC P1ReadUpDone
+
   LDA #BUTTON_UP
   BIT buttonsP1
   BEQ P1ReadUpDone
@@ -39,6 +44,11 @@ P1ReadUp:
 P1ReadUpDone:
 
 P1ReadRight:
+  ; Check collision with wall
+  LDA player_1_x
+  CMP #PLAYER1_RIGHT_BOUND
+  BCS P1ReadRightDone
+
   ; check if player is already walking
   LDA player_1_walking
   CMP #TRUE
@@ -61,6 +71,11 @@ P1ReadRight:
 P1ReadRightDone:
 
 P1ReadDown:
+  ; Check collision with wall
+  LDA player_1_y
+  CMP #PLAYER_BOT_BOUND
+  BCS P1ReadDownDone
+
   ; check if player is already walking
   LDA player_1_walking
   CMP #TRUE
@@ -83,6 +98,11 @@ P1ReadDown:
 P1ReadDownDone:
 
 P1ReadLeft:
+  ; Check collision with wall
+  LDA player_1_x
+  CMP #PLAYER1_LEFT_BOUND
+  BCC P1ReadLeftDone
+
   ; check if player is already walking
   LDA player_1_walking
   CMP #TRUE
@@ -127,6 +147,11 @@ P2ReadA
 P2ReadADone:
 
 P2ReadUp:
+  ; Check collision with wall
+  LDA player_2_y
+  CMP #PLAYER_TOP_BOUND
+  BCC P2ReadUpDone
+
   LDA #BUTTON_UP
   BIT buttonsP2
   BEQ P2ReadUpDone
@@ -144,6 +169,11 @@ P2ReadUp:
 P2ReadUpDone:
 
 P2ReadRight:
+  ; Check collision with wall
+  LDA player_2_x
+  CMP #PLAYER2_RIGHT_BOUND
+  BCS P2ReadRightDone
+
   ; check if player is already walking
   LDA player_2_walking
   CMP #TRUE
@@ -166,6 +196,11 @@ P2ReadRight:
 P2ReadRightDone:
 
 P2ReadDown:
+  ; Check collision with wall
+  LDA player_2_y
+  CMP #PLAYER_BOT_BOUND
+  BCS P2ReadDownDone
+
   ; check if player is already walking
   LDA player_2_walking
   CMP #TRUE
@@ -188,6 +223,11 @@ P2ReadDown:
 P2ReadDownDone:
 
 P2ReadLeft:
+  ; Check collision with wall
+  LDA player_2_x
+  CMP #PLAYER2_LEFT_BOUND
+  BCC P2ReadLeftDone
+
   ; check if player is already walking
   LDA player_2_walking
   CMP #TRUE
