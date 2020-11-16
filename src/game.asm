@@ -563,8 +563,17 @@ NMI:
   JSR HandleBullet       ; handle player bullet
   JSR HandleBullet2
   JSR Player1Sprite
+
+  LDA player_1_walking
+  CMP #FALSE
+  BEQ EndP1WalkCheck
   JSR Player1Animation
+EndP1WalkCheck:
+  LDA player_2_walking
+  CMP #FALSE
+  BEQ EndP2WalkCheck
   JSR Player2Animation
+EndP2WalkCheck:
   ;JSR IncrementMoney     ; increment money counter
   ;JSR DrawMoney          ; draw money to screen
   JSR CameraScroll       ; set camera scroll
@@ -611,10 +620,10 @@ bullet:
   .db $88, $08, $00, $88   ;sprite 3
 
 p2sprite
-  .db $00, $02, $01, $00   ;sprite 0
-  .db $00, $03, $01, $08   ;sprite 1
-  .db $08, $12, $01, $00   ;sprite 2
-  .db $08, $13, $01, $08   ;sprite 3
+  .db $00, $03, %01000001, $00   ;sprite 0
+  .db $00, $02, %01000001, $08   ;sprite 1
+  .db $08, $13, %01000001, $00   ;sprite 2
+  .db $08, $12, %01000001, $08   ;sprite 3
 
 bullet2:
   .db $88, $08, $00, $88   ;sprite 3
