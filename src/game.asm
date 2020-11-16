@@ -59,6 +59,13 @@ FALSE = $00
 BULLET_VEL = $05
 BULLET_OFFSET = $10
 
+; bg ui offsets
+PLAYER_1_HEALTHBAR = $43
+PLAYER_1_SCORECOUNT = $4E
+
+PLAYER_2_HEALTHBAR = $5A
+PLAYER_2_SCORECOUNT = $51
+
 ; Direction Enum
 DEAD  = $0
 UP    = $1
@@ -226,6 +233,15 @@ InitVariables:
   STA bullet_2_y
   LDA #$88          ; 132 tiles from bg offset
   STA bg_money_offset
+
+  LDA #$03
+  STA player_1_health
+  STA player_2_health
+
+  LDA #$00
+  STA player_1_score
+  STA player_2_score
+
   LDA #RIGHT
   STA player_1_dir
   LDA #LEFT
@@ -245,6 +261,138 @@ Forever:
   JMP Forever     ;jump back to Forever, infinite loop
   
 Subroutines:
+UpdateScores:
+  LDA $2002         ; release hi/lo latch
+
+P1Score:
+  ; set vram addr of player 1 counter
+  LDX #$20
+  LDY #PLAYER_1_SCORECOUNT
+  STX $2006
+  STY $2006
+
+  LDA player_1_score
+  CMP #$0A
+  BCS P2Score          ; if score is greater than 9, branch
+  STA $2007
+
+P2Score:
+  ; set vram addr of player 1 counter
+  LDX #$20
+  LDY #PLAYER_2_SCORECOUNT
+  STX $2006
+  STY $2006
+
+  LDA player_2_score
+  CMP #$0A
+  BCS UpdateScoresDone ; if score is greater than 9, branch
+  STA $2007
+
+UpdateScoresDone:
+  RTS
+
+UpdateHealthbars:
+  LDA $2002                 ; release the hi/lo latch
+
+P1Health:
+  LDX #$20                  ; hi addr = $20
+  LDY #PLAYER_1_HEALTHBAR   ; load player 1 healthbar address
+  STX $2006                 ; give ppu a draw location in vram
+  STY $2006 
+
+  ; Check player 1 health values
+  LDA player_1_health
+  CMP #$00
+  BEQ P1Health0
+  CMP #$01
+  BEQ P1Health1
+  CMP #$02
+  BEQ P1Health2
+  CMP #$03
+  BEQ P1Health3
+  JMP P1Health0 ; default to 0 health
+
+P1Health0:      ; draw 0 health
+  LDA #$5D
+  STA $2007
+  STA $2007
+  LDA #$5E
+  STA $2007
+  JMP P2Health
+P1Health1:      ; draw 1 health
+  LDA #$57
+  STA $2007
+  LDA #$5D
+  STA $2007
+  LDA #$5E
+  STA $2007
+  JMP P2Health
+P1Health2:      ; draw 2 health
+  LDA #$57
+  STA $2007
+  STA $2007
+  LDA #$5E
+  STA $2007
+  JMP P2Health
+P1Health3:      ; draw 3 health
+  LDA #$57
+  STA $2007
+  LDA #$57
+  STA $2007
+  LDA #$5B
+  STA $2007
+  JMP P2Health
+
+P2Health:
+  LDX #$20                  ; hi addr = $20
+  LDY #PLAYER_2_HEALTHBAR   ; load player 2 healthbar address
+  STX $2006                 ; give ppu a draw location in vram
+  STY $2006 
+
+  ; check player 2 health values
+  LDA player_2_health
+  CMP #$00
+  BEQ P2Health0
+  CMP #$01
+  BEQ P2Health1
+  CMP #$02
+  BEQ P2Health2
+  CMP #$03
+  BEQ P2Health3
+  JMP P2Health0 ; default to 0 health
+
+P2Health0:      ; draw 0 health
+  LDA #$5D
+  STA $2007
+  STA $2007
+  LDA #$5E
+  STA $2007
+  JMP UpdateHealthBarsDone
+P2Health1:      ; draw 1 health
+  LDA #$5D
+  STA $2007
+  STA $2007
+  LDA #$5B
+  STA $2007
+  JMP UpdateHealthBarsDone
+P2Health2:      ; draw 2 health
+  LDA #$5D
+  STA $2007
+  LDA #$57
+  STA $2007
+  LDA #$5B
+  STA $2007
+  JMP UpdateHealthBarsDone
+P2Health3:      ; draw 3 health
+  LDA #$57
+  STA $2007
+  STA $2007
+  LDA #$5B
+  STA $2007
+  JMP UpdateHealthBarsDone
+
+UpdateHealthBarsDone:
+  RTS
 
 IncrementMoney:
   CLC
@@ -489,65 +637,6 @@ NMI:
   LDA #$02
   STA $4014       ; set the high byte (02) of the RAM address, start the transfer
 
-  ; GAME STATE STRUCTURE
-  ;
-  ; NMI
-  ;
-  ; // start screen 
-  ; if (game state is start screen) {
-  ;
-  ;     if (the game state only just changed to start screen) {
-  ;         load start screen to nametable;
-  ;     }
-  ;
-  ;     set ppuscroll to the nametable with the start screen;
-  ;
-  ;     check for start button press;
-  ;
-  ;     if (start button pressed) {
-  ;         set gamestate to playing;
-  ;     }
-  ; }
-  ;
-  ; // playing 
-  ; else if (game state is playing) {
-  ;
-  ;     if (the game state only just changed to playing) {
-  ;         load the level to the name table;
-  ;     }
-  ;
-  ;     set ppuscroll to the nametable of the level;
-  ;
-  ;     player(s) input;
-  ;
-  ;     game logic;
-  ;
-  ;     sprite stuffs;
-  ;
-  ;     if (game ended) {
-  ;         set gamestate to game over;
-  ;     }
-  ; }
-  ;
-  ; // game over screen
-  ; else if (game state is game over) {
-  ;
-  ;     if (the game state only just changed to game over) {
-  ;         load start screen to nametable;
-  ;         draw player info to game over screen;
-  ;     }
-  ;
-  ;     set ppuscroll to the nametable with the start screen;
-  ;
-  ;     check for start button press;
-  ;
-  ;     if (start button pressed) {
-  ;         set gamestate to start screen;
-  ;     }
-  ; }
-  ;
-  ; RTI
-
   ; Set is walking flag
   LDA #FALSE
   STA player_1_walking
@@ -563,6 +652,8 @@ NMI:
   JSR HandleBullet       ; handle player bullet
   JSR HandleBullet2
   JSR Player1Sprite
+  JSR UpdateHealthbars   ; Update player health bars
+  JSR UpdateScores       ; Update player score counts
 
   LDA player_1_walking
   CMP #FALSE
@@ -574,8 +665,7 @@ EndP1WalkCheck:
   BEQ EndP2WalkCheck
   JSR Player2Animation
 EndP2WalkCheck:
-  ;JSR IncrementMoney     ; increment money counter
-  ;JSR DrawMoney          ; draw money to screen
+
   JSR CameraScroll       ; set camera scroll
 
 ReturnFromInterrupt:
@@ -597,7 +687,7 @@ palette:
   ; background palettes
   .db $0F,$0F,$08,$37 ; 00
   .db $01,$0F,$17,$37 ; 01
-  .db $0F,$00,$10,$30 ; 10
+  .db $0F,$00,$0C,$08 ; 10
   .db $0F,$00,$10,$30 ; 11
   
   ; sprite palettes
