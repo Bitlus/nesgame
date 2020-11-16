@@ -10,9 +10,6 @@
 testing .rs 1
 buttonsP1 .rs 1 ; player 1 controller data
 buttonsP2 .rs 1 ; player 2 controller data
-isWalking .rs 1
-animationCounter .rs 1
-playerAnimationCounter .rs 1
 playerFrame .rs 1
 bg_ptr_lo .rs 1 ; bg pointer low byte
 bg_ptr_hi .rs 1 ; bg pointer high byte
@@ -30,16 +27,20 @@ cam_y .rs 1 ; y camera PPUSCROLL
 player_1_dir      .rs 1 ; player 1 direction
 player_1_x        .rs 1 ; player 1 x
 player_1_y        .rs 1 ; player 1 y
+player_1_a_counter .rs 1
 player_1_a_frame  .rs 1 ; player 1 animation frame
 player_1_health   .rs 1 ; player 1 health
 player_1_score    .rs 1 ; player 1 score
+player_1_walking  .rs 1 ; player 1 is walking
 
 player_2_dir      .rs 1 ; player 2 direction
 player_2_x        .rs 1 ; player 2 x
 player_2_y        .rs 1 ; player 2 y
+player_2_a_counter .rs 1
 player_2_a_frame  .rs 1 ; player 2 animation frame
 player_2_health   .rs 1 ; player 2 health
 player_2_score    .rs 1 ; player 2 score
+player_2_walking  .rs 1
 
 ; Bullets
 bullet_1_dir      .rs 1 ; bullet 1 direction
@@ -49,6 +50,10 @@ bullet_1_y        .rs 1 ; bullet 1 y coord
 bullet_2_dir      .rs 1 ; bullet 2 direction
 bullet_2_x        .rs 1 ; bullet 2 x coord
 bullet_2_y        .rs 1 ; bullet 2 y coord
+
+; misc constants
+TRUE = $01
+FALSE = $00
 
 ; Bullet constants
 BULLET_VEL = $05
@@ -68,19 +73,31 @@ RIGHT = $2
 DOWN  = $3
 LEFT  = $4
 
-ROOM_UP    = $57
-ROOM_RIGHT = $D6
-ROOM_DOWN  = $AF
-ROOM_LEFT  = $1C
+ROOM_UP    = $22
+ROOM_RIGHT = $F7
+ROOM_DOWN  = $DF
+ROOM_LEFT  = $08
 
-BUTTON_A =$80
-BUTTON_B =$40
-BUTTON_SELECT =$20
-BUTTON_START =$10
-BUTTON_UP =$08
-BUTTON_DOWN =$04
-BUTTON_LEFT =$02
-BUTTON_RIGHT =$01
+BUTTON_A = $80
+BUTTON_B = $40
+BUTTON_SELECT = $20
+BUTTON_START = $10
+BUTTON_UP = $08
+BUTTON_DOWN = $04
+BUTTON_LEFT = $02
+BUTTON_RIGHT = $01
+
+P1_START_X = $29
+P1_START_Y = $70
+P2_START_X = $C7
+P2_START_Y = $8D
+
+PLAYER_TOP_BOUND = $20
+PLAYER_BOT_BOUND = $D8
+PLAYER1_LEFT_BOUND = $06
+PLAYER1_RIGHT_BOUND = $59
+PLAYER2_LEFT_BOUND = $97
+PLAYER2_RIGHT_BOUND = $E9
 
   .bank 0
   .org $C000 
@@ -140,7 +157,7 @@ LoadSpritesLoop:
   LDA sprites, x        ; load data from address (sprites +  x)
   STA $0200, x          ; store into RAM address ($0200 + x)
   INX                   ; X = X + 1
-  CPX #$14              ; Compare X to hex $20, decimal 32 to load 5 sprites
+  CPX #$28              ; Compare X to hex $28, decimal 40 to load 10 sprites
   BNE LoadSpritesLoop   ; Branch to LoadSpritesLoop if compare was Not Equal to zero
                         ; if compare was equal to 32, keep going down
 
@@ -197,8 +214,10 @@ LoadAttributeLoop:
 
 InitVariables:
   LDA #$00
-  STA animationCounter
-  STA playerAnimationCounter
+  STA player_1_a_counter
+  STA player_1_a_frame
+  STA player_2_a_counter
+  STA player_2_a_frame
   STA playerFrame
   STA cam_x
   STA cam_y
@@ -209,18 +228,33 @@ InitVariables:
   STA bullet_1_dir
   STA bullet_1_x
   STA bullet_1_y
+  STA bullet_2_dir
+  STA bullet_2_x
+  STA bullet_2_y
   LDA #$88          ; 132 tiles from bg offset
   STA bg_money_offset
-  LDA #RIGHT
+
   LDA #$03
   STA player_1_health
+  STA player_2_health
+
   LDA #$00
   STA player_1_score
-  LDA #$03
-  STA player_2_health
-  LDA #$00
   STA player_2_score
 
+  LDA #RIGHT
+  STA player_1_dir
+  LDA #LEFT
+  STA player_2_dir
+  ; player positions
+  LDA #P1_START_X
+  STA player_1_x
+  LDA #P2_START_X
+  STA player_2_x
+  LDA #P1_START_Y
+  STA player_1_y
+  LDA #P2_START_Y
+  STA player_2_y
 
 Forever:
   NOP
@@ -507,8 +541,71 @@ HandleBulletDone:
   STA $0213
   RTS
 
+; Totally DRY code here....
+HandleBullet2:
+  LDA bullet_2_y
+  CMP #ROOM_UP
+  BCC set_bullet2_dead
+  CMP #ROOM_DOWN
+  BCS set_bullet2_dead
+  LDA bullet_2_x
+  CMP #ROOM_LEFT
+  BCC set_bullet2_dead
+  CMP #ROOM_RIGHT
+  BCS set_bullet2_dead
+  JMP chk_dead2
+set_bullet2_dead:  
+  LDA #DEAD
+  STA bullet_2_dir
+  ; if the bullet is dead, set x and y to 0 and end the subroutine
+chk_dead2:
+  LDA bullet_2_dir
+  CMP #DEAD
+  BNE chk_dir2
+  LDA #$00
+  STA bullet_2_x
+  STA bullet_2_y
+  JMP HandleBullet2Done
+chk_dir2:
+  ; if the bullet is not dead, increment its x or y coords based on the bullet's direction
+  CMP #UP
+  BNE HandleBullet2_chk_r
+  LDA bullet_2_y
+  SEC
+  SBC #BULLET_VEL
+  STA bullet_2_y
+  JMP HandleBullet2Done
+HandleBullet2_chk_r:
+  CMP #RIGHT
+  BNE HandleBullet2_chk_d
+  LDA bullet_2_x
+  CLC
+  ADC #BULLET_VEL
+  STA bullet_2_x
+  JMP HandleBullet2Done
+HandleBullet2_chk_d:
+  CMP #DOWN
+  BNE HandleBullet2_chk_l
+  LDA bullet_2_y
+  CLC
+  ADC #BULLET_VEL
+  STA bullet_2_y
+  JMP HandleBullet2Done
+HandleBullet2_chk_l:
+  LDA bullet_2_x
+  SEC
+  SBC #BULLET_VEL
+  STA bullet_2_x
+HandleBullet2Done:
+  ; store bullet x, y in sprite memory addresses
+  LDA bullet_2_y
+  STA $0224
+  LDA bullet_2_x
+  STA $0227
+  RTS
+
 IdleSprite:
-  LDA isWalking
+  LDA player_1_walking
   CMP #$00
   JMP IdleSpriteDone
 
@@ -541,8 +638,9 @@ NMI:
   STA $4014       ; set the high byte (02) of the RAM address, start the transfer
 
   ; Set is walking flag
-  LDA #$00
-  STA isWalking
+  LDA #FALSE
+  STA player_1_walking
+  STA player_2_walking
 
   ;LDA $0200
   ;STA player_1_y
@@ -552,9 +650,22 @@ NMI:
   JSR ReadControllers ; do the controller thing
   JSR HandleGameInputs   
   JSR HandleBullet       ; handle player bullet
+  JSR HandleBullet2
   JSR Player1Sprite
   JSR UpdateHealthbars   ; Update player health bars
   JSR UpdateScores       ; Update player score counts
+
+  LDA player_1_walking
+  CMP #FALSE
+  BEQ EndP1WalkCheck
+  JSR Player1Animation
+EndP1WalkCheck:
+  LDA player_2_walking
+  CMP #FALSE
+  BEQ EndP2WalkCheck
+  JSR Player2Animation
+EndP2WalkCheck:
+
   JSR CameraScroll       ; set camera scroll
 
 ReturnFromInterrupt:
@@ -576,12 +687,12 @@ palette:
   ; background palettes
   .db $0F,$0F,$08,$37 ; 00
   .db $01,$0F,$17,$37 ; 01
-  .db $0F,$0F,$0C,$08 ; 10
-  .db $0F,$00,$10,$08 ; 11
+  .db $0F,$00,$10,$30 ; 10
+  .db $0F,$00,$10,$30 ; 11
   
   ; sprite palettes
   .db $0C,$11,$0F,$30 ; 00
-  .db $31,$02,$38,$3c ; 01
+  .db $0C,$05,$1D,$30 ; 01
   .db $22,$29,$1A,$0F ; 10
   .db $22,$36,$17,$0F ; 11
 
@@ -596,6 +707,15 @@ sprites:
   .db $08, $13, $00, $08   ;sprite 3
 
 bullet:
+  .db $88, $08, $00, $88   ;sprite 3
+
+p2sprite
+  .db $00, $03, %01000001, $00   ;sprite 0
+  .db $00, $02, %01000001, $08   ;sprite 1
+  .db $08, $13, %01000001, $00   ;sprite 2
+  .db $08, $12, %01000001, $08   ;sprite 3
+
+bullet2:
   .db $88, $08, $00, $88   ;sprite 3
 
 endsprites:
