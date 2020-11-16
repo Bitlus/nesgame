@@ -214,10 +214,11 @@ InitVariables:
   LDA #RIGHT
   LDA #$03
   STA player_1_health
+  LDA #$00
   STA player_1_score
-
-  LDA #$02
+  LDA #$03
   STA player_2_health
+  LDA #$00
   STA player_2_score
 
 
