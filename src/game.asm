@@ -312,8 +312,6 @@ Bullet1:
   BNE Bullet2            ; if not zero, branch
 
   ; if zero
-  LDA #$03
-  STA player_2_health    ; reset player 2 health
   LDA #DEAD
   STA player_2_dir
 
@@ -325,6 +323,7 @@ Bullet1:
   ; if player 1 score is 10
   LDA #$00
   STA player_1_score     ; set player 1 score to 0
+  STA player_2_score     ; set player 1 score to 0
 
 Bullet2:
   LDA bullet_2_dir
@@ -364,8 +363,6 @@ Bullet2:
   BNE BulletCollisionDone    ; if not zero, branch
 
   ; if zero
-  LDA #$03
-  STA player_1_health        ; reset player 1 health
   LDA #DEAD
   STA player_1_dir
 
@@ -377,6 +374,7 @@ Bullet2:
   ; if player 1 score is 10
   LDA #$00
   STA player_2_score        ; set player 2 score to 0
+  STA player_1_score     ; set player 1 score to 0
 
 BulletCollisionDone:
   RTS
