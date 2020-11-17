@@ -51,6 +51,10 @@ bullet_2_dir      .rs 1 ; bullet 2 direction
 bullet_2_x        .rs 1 ; bullet 2 x coord
 bullet_2_y        .rs 1 ; bullet 2 y coord
 
+death_anim_fc .rs 1
+death_anim_frame .rs 1
+death_anim_counter .rs 1
+
 ; misc constants
 TRUE = $01
 FALSE = $00
@@ -231,6 +235,9 @@ InitVariables:
   STA bullet_2_dir
   STA bullet_2_x
   STA bullet_2_y
+  STA death_anim_fc
+  STA death_anim_frame
+  STA death_anim_counter
   LDA #$88          ; 132 tiles from bg offset
   STA bg_money_offset
 
@@ -307,6 +314,8 @@ Bullet1:
   ; if zero
   LDA #$03
   STA player_2_health    ; reset player 2 health
+  LDA #DEAD
+  STA player_2_dir
 
   INC player_1_score
   LDA player_1_score     ; increase player 1 score
@@ -357,6 +366,8 @@ Bullet2:
   ; if zero
   LDA #$03
   STA player_1_health        ; reset player 1 health
+  LDA #DEAD
+  STA player_1_dir
 
   INC player_2_score
   LDA player_2_score         ; increase player 2 score
@@ -735,9 +746,134 @@ IdleSprite:
   STA $020D
 
 IdleSpriteDone:
-  RTS 
+  RTS
+
+DeathAnimation:
+  LDA death_anim_fc
+  CMP #$05 ; "Framerate"
+  BNE SetDeathSpriteAtt
+  LDA #$00
+  STA death_anim_fc
+  LDA death_anim_frame
+  CMP #$01
+  BEQ SetAnimFrameToZero
+  LDA #$01
+  STA death_anim_frame
+  JMP SetDeathSpriteAtt
+SetAnimFrameToZero:
+  LDA #$00
+  STA death_anim_frame
+SetDeathSpriteAtt:
+  LDA player_1_dir
+  CMP #DEAD
+  BEQ Player1DeathSprites
+  LDA death_anim_frame
+  CMP #$01
+  BEQ SetP2DeathSprite1
+  JMP SetP2DeathSprite0
+Player1DeathSprites:
+  LDA death_anim_frame
+  CMP #$01
+  BEQ SetP1DeathSprite1
+SetP1DeathSprite0:
+  LDA $0202
+  ORA #%00000011
+  STA $0202
+  LDA $0206
+  ORA #%00000011
+  STA $0206
+  LDA $020A
+  ORA #%00000011
+  STA $020A
+  LDA $020E
+  ORA #%00000011
+  STA $020E
+  JMP IncrementDeathCounters
+SetP1DeathSprite1:
+  LDA $0202
+  AND #%11111100
+  STA $0202
+  LDA $0206
+  AND #%11111100
+  STA $0206
+  LDA $020A
+  AND #%11111100
+  STA $020A
+  LDA $020E
+  AND #%11111100
+  STA $020E
+  JMP IncrementDeathCounters
+SetP2DeathSprite0:
+  LDA $0216
+  ORA #%00000011
+  STA $0216
+  LDA $021A
+  ORA #%00000011
+  STA $021A
+  LDA $021E
+  ORA #%00000011
+  STA $021E
+  LDA $0222
+  ORA #%00000011
+  STA $0222
+  JMP IncrementDeathCounters
+SetP2DeathSprite1:
+  LDA $0216
+  AND #%11111101
+  STA $0216
+  LDA $021A
+  AND #%11111101
+  STA $021A
+  LDA $021E
+  AND #%11111101
+  STA $021E
+  LDA $0222
+  AND #%11111101
+  STA $0222
+IncrementDeathCounters:
+  INC death_anim_fc
+  INC death_anim_counter
+  
+
+  LDA death_anim_counter
+  CMP #$5A ; How long it lasts
+  BEQ ResetGameVariables
+  JMP ReturnFromInterrupt
 
 SubroutinesDone:
+
+ResetGameVariables:
+  LDA #$00
+  STA player_1_a_counter
+  STA player_1_a_frame
+  STA player_2_a_counter
+  STA player_2_a_frame
+  STA bullet_1_dir
+  STA bullet_1_x
+  STA bullet_1_y
+  STA bullet_2_dir
+  STA bullet_2_x
+  STA bullet_2_y
+  STA death_anim_fc
+  STA death_anim_frame
+  STA death_anim_counter
+  LDA #$03
+  STA player_1_health
+  STA player_2_health
+  LDA #RIGHT
+  STA player_1_dir
+  LDA #LEFT
+  STA player_2_dir
+  ; player positions
+  LDA #P1_START_X
+  STA player_1_x
+  LDA #P2_START_X
+  STA player_2_x
+  LDA #P1_START_Y
+  STA player_1_y
+  LDA #P2_START_Y
+  STA player_2_y
+  JMP ReturnFromInterrupt
  
 NMI:
   ; player stuff?
@@ -756,6 +892,16 @@ NMI:
   ;LDA $0203
   ;STA player_1_x
 
+  LDA player_1_dir
+  CMP #DEAD
+  BEQ GotoDeathAnimation
+  LDA player_2_dir
+  CMP #DEAD
+  BNE SubroutineCalls
+GotoDeathAnimation:
+  JMP DeathAnimation
+
+SubroutineCalls:
   JSR ReadControllers ; do the controller thing
   JSR HandleGameInputs   
   JSR HandleBullet       ; handle player bullet
@@ -804,7 +950,7 @@ palette:
   .db $0C,$11,$0F,$30 ; 00
   .db $0C,$05,$1D,$30 ; 01
   .db $22,$29,$1A,$0F ; 10
-  .db $22,$36,$17,$0F ; 11
+  .db $0C,$10,$30,$0F ; 11
 
 
   .include "background.asm"
