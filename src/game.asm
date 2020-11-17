@@ -277,15 +277,15 @@ Bullet1:
   BCC Bullet2            ; if carry cleared then bullet hasn't reached player 2 yet, so branch
 
   ; if has reached player 2 x
-  LDA bullet_1_x
-  SBC #$10
+  LDA bullet_1_x         ; load bullet 1 x
+  SBC #$10               ; sub width of player metasprite
   SEC
-  SBC player_2_x
-  BCS Bullet2
+  SBC player_2_x         ; sub player 2 x
+  BCS Bullet2            ; if carry set then bullet is passed the player, so branch
 
   ; if has not passed player 2 x
   LDA bullet_1_y         ; load bullet 1 y
-  ADC #$08               ; add height of bullet sprite
+  ADC #$04               ; add height of bullet sprite
   SEC
   SBC player_2_y         ; sub player 2 y
   BCC Bullet2            ; if carry cleared then bullet is above the player, so branch
@@ -316,8 +316,58 @@ Bullet1:
   ; if player 1 score is 10
   LDA #$00
   STA player_1_score     ; set player 1 score to 0
+
 Bullet2:
-  
+  LDA bullet_2_dir
+  CMP #DEAD
+  BEQ BulletCollisionDone
+
+  ; if alive
+  LDA bullet_2_x             ; load bullet 2 x
+  SBC #$14                   ; sub width of player metasprite + width of bullet metasprite
+  SEC
+  SBC player_1_x             ; subtract player 1 x
+  BCS BulletCollisionDone    ; if carry set then bullet hasn't reached player 1 yet, so branch
+
+  LDA bullet_2_x             ; load bullet 2 x
+  ADC #$08                   ; add width of bullet sprite
+  SEC
+  SBC player_1_x             ; sub player 1 x
+  BCC BulletCollisionDone    ; if carry cleared, then the bullet has passed player 1
+
+  LDA bullet_2_y             ; load bullet 2 y
+  SBC #$10                   ; sub height of player sprite
+  SEC
+  SBC player_1_y             ; sub player 1 y
+  BCS BulletCollisionDone    ; if carry set then bullet is below the player, so branch
+
+  LDA bullet_2_y             ; load bullet 2 y
+  ADC #$04                   ; add the height of the bullet sprite
+  SEC
+  SBC player_1_y             ; sub player 2 y
+  BCC BulletCollisionDone    ; if carry cleared, then bullet is above the player so branch
+
+  ; HIT
+  LDA #DEAD
+  STA bullet_2_dir           ; kill bullet
+
+  DEC player_1_health        ; decrement player 1 health
+  BNE BulletCollisionDone    ; if not zero, branch
+
+  ; if zero
+  LDA #$03
+  STA player_1_health        ; reset player 1 health
+
+  INC player_2_score
+  LDA player_2_score         ; increase player 2 score
+  CMP #$0A
+  BNE BulletCollisionDone    ; if player 2 score is not 10, branch
+
+  ; if player 1 score is 10
+  LDA #$00
+  STA player_2_score        ; set player 2 score to 0
+
+BulletCollisionDone:
   RTS
 
 UpdateScores:
