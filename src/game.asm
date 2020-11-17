@@ -261,6 +261,65 @@ Forever:
   JMP Forever     ;jump back to Forever, infinite loop
   
 Subroutines:
+
+BulletCollision:
+
+Bullet1:
+  LDA bullet_1_dir
+  CMP #DEAD
+  BEQ Bullet2
+
+  ; if alive
+  LDA bullet_1_x         ; load bullet 1 x
+  ADC #$08               ; add width of bullet sprite
+  SEC
+  SBC player_2_x         ; subtract player 2 x
+  BCC Bullet2            ; if carry cleared then bullet hasn't reached player 2 yet, so branch
+
+  ; if has reached player 2 x
+  LDA bullet_1_x
+  SBC #$10
+  SEC
+  SBC player_2_x
+  BCS Bullet2
+
+  ; if has not passed player 2 x
+  LDA bullet_1_y         ; load bullet 1 y
+  ADC #$08               ; add height of bullet sprite
+  SEC
+  SBC player_2_y         ; sub player 2 y
+  BCC Bullet2            ; if carry cleared then bullet is above the player, so branch
+
+  ; if is above the bottom of player 2
+  LDA bullet_1_y         ; load bullet 1 y
+  SBC #$10               ; sub the height of the player 2 metasprite
+  SEC 
+  SBC player_2_y         ; sub player 2 y
+  BCS Bullet2            ; if carry set, then bullet is below the player so branch
+
+  ; if is below the top of player 2 (HIT)
+  LDA #DEAD
+  STA bullet_1_dir       ; kill bullet
+
+  DEC player_2_health    ; decrement player 2 health
+  BNE Bullet2            ; if not zero, branch
+
+  ; if zero
+  LDA #$03
+  STA player_2_health    ; reset player 2 health
+
+  INC player_1_score
+  LDA player_1_score     ; increase player 1 score
+  CMP #$0A
+  BNE Bullet2            ; if player 1 score is not 10, branch
+
+  ; if player 1 score is 10
+  LDA #$00
+  STA player_1_score     ; set player 1 score to 0
+Bullet2:
+  
+  RTS
+
 UpdateScores:
   LDA $2002         ; release hi/lo latch
 
@@ -652,6 +711,7 @@ NMI:
   JSR HandleBullet       ; handle player bullet
   JSR HandleBullet2
   JSR Player1Sprite
+  JSR BulletCollision    ; do bullet collision
   JSR UpdateHealthbars   ; Update player health bars
   JSR UpdateScores       ; Update player score counts
 
