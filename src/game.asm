@@ -59,6 +59,8 @@ death_anim_counter .rs 1
 TRUE = $01
 FALSE = $00
 
+MAX_SCORE = $05
+
 ; Bullet constants
 BULLET_VEL = $05
 BULLET_OFFSET = $10
@@ -317,7 +319,7 @@ Bullet1:
 
   INC player_1_score
   LDA player_1_score     ; increase player 1 score
-  CMP #$0A
+  CMP #MAX_SCORE
   BNE Bullet2            ; if player 1 score is not 10, branch
 
   ; if player 1 score is 10
@@ -368,7 +370,7 @@ Bullet2:
 
   INC player_2_score
   LDA player_2_score         ; increase player 2 score
-  CMP #$0A
+  CMP #MAX_SCORE
   BNE BulletCollisionDone    ; if player 2 score is not 10, branch
 
   ; if player 1 score is 10
@@ -390,7 +392,7 @@ P1Score:
   STY $2006
 
   LDA player_1_score
-  CMP #$0A
+  CMP #MAX_SCORE
   BCS P2Score          ; if score is greater than 9, branch
   STA $2007
 
@@ -402,7 +404,7 @@ P2Score:
   STY $2006
 
   LDA player_2_score
-  CMP #$0A
+  CMP #MAX_SCORE
   BCS UpdateScoresDone ; if score is greater than 9, branch
   STA $2007
 
@@ -510,82 +512,6 @@ P2Health3:      ; draw 3 health
   JMP UpdateHealthBarsDone
 
 UpdateHealthBarsDone:
-  RTS
-
-IncrementMoney:
-  CLC
-
-  ; ones
-;  LDA money_ones
-;  ADC #$01
-;  CMP #$0A                      ; if acc > 9, set to 0 and set the carry flag
-;  BNE IM_ones_done
-;  LDA #$00
-;  SEC
-;IM_ones_done:
-;  STA money_ones
-
-  ; tens
-  LDA money_tens
-;  BCC IM_tens_done
-;  CLC
-  ADC #$01
-  CMP #$0A                      ; if acc > 9, set to 0 and set the carry flag
-  BNE IM_tens_done
-  LDA #$00
-  SEC
-IM_tens_done:
-  STA money_tens                ; store acc in tens variable
-
-  ; hundreds
-  LDA money_hundreds
-  BCC IM_hundreds_done          ; if carry flag is not clear, increment acc and clear the carry flag
-  CLC
-  ADC #$01
-  CMP #$0A                      ; if acc > 9, set to 0 and set the carry flag
-  BNE IM_hundreds_done
-  LDA #$00
-  SEC
-IM_hundreds_done:
-  STA money_hundreds
-
-  ; thousands
-  LDA money_thousands
-  BCC IM_thousands_done         ; if carry flag is not clear, increment acc and clear the carry flag
-  CLC
-  ADC #$01
-  CMP #$0A                      ; if acc > 9, set to 0 and write to tens and hundreds slots
-  BNE IM_thousands_done
-  LDA #$09
-  STA money_ones
-  STA money_tens
-  STA money_hundreds
-IM_thousands_done:
-  STA money_thousands           ; store acc in thousands slot
-  RTS
-
-
-; draws money values into VRAM tile memory
-DrawMoney:
-  ; set initial address to $20xx
-  LDX #$20
-  LDY bg_money_offset
-
-  STX $2006
-  STY $2006
-
-  LDA money_thousands
-  STA $2007
-
-  LDA money_hundreds
-  STA $2007
-  
-  LDA money_tens
-  STA $2007
-
-  LDA money_ones
-  STA $2007
-
   RTS
 
 ; loads cam values and writes PPUSCROLL with them
